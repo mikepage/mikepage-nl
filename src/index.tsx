@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
-import { tools } from './tools'
+import { experiments } from './experiments'
 import { skills, findSkill, skillMd } from './skills'
 import { components } from './platform'
 import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard, agentSkills, a2aCard, aiCatalog, protectedResource } from './lib/catalog'
@@ -100,7 +100,7 @@ app.get('/AUTH.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdo
 app.get('/.well-known/auth.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
 app.get('/sitemap.xml', (c) => {
   const origin = new URL(c.req.url).origin
-  const urls = ['/', '/platform', '/experiments', '/skills', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/experiments/${t.slug}`)]
+  const urls = ['/', '/platform', '/experiments', '/skills', ...posts.map((p) => `/posts/${p.slug}`), ...experiments.map((x) => `/experiments/${x.slug}`)]
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
     .map((u) => `  <url><loc>${origin}${u}</loc></url>`)
     .join('\n')}\n</urlset>\n`
@@ -174,11 +174,11 @@ app.get('/experiments', (c) =>
         Worker.
       </p>
       <ul class="posts">
-        {tools.map((tool) => (
+        {experiments.map((experiment) => (
           <li>
-            <a href={`/experiments/${tool.slug}`}>{tool.title}</a>
-            <div class="meta">⚡ {tool.pattern}</div>
-            <p class="summary">{tool.summary}</p>
+            <a href={`/experiments/${experiment.slug}`}>{experiment.title}</a>
+            <div class="meta">⚡ {experiment.pattern}</div>
+            <p class="summary">{experiment.summary}</p>
           </li>
         ))}
       </ul>
@@ -257,11 +257,11 @@ app.get('/skills/:id', (c) => {
   return c.text(skillMd(skill), 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
 })
 
-for (const tool of tools) {
-  const engine = tool.engine
+for (const experiment of experiments) {
+  const engine = experiment.engine
   if (engine) {
-    // Generic JSON API for every tool with an engine — one source of truth with the HTML page.
-    tool.router.get('/api', async (c) => {
+    // Generic JSON API for every experiment with an engine — one source of truth with the HTML page.
+    experiment.router.get('/api', async (c) => {
       const env = c.env as CloudflareBindings
       if (!(await allow(env.API_RL, `api:${clientKey(c.req.raw)}`))) {
         return c.json({ error: 'rate limit exceeded' }, 429)
@@ -275,7 +275,7 @@ for (const tool of tools) {
       }
     })
   }
-  app.route(`/experiments/${tool.slug}`, tool.router)
+  app.route(`/experiments/${experiment.slug}`, experiment.router)
 }
 
 for (const post of posts) {

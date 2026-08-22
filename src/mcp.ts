@@ -1,10 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { McpAgent } from 'agents/mcp'
 import { z, type ZodRawShape, type ZodTypeAny } from 'zod'
-import { tools } from './tools'
-import type { Engine, JsonSchema } from './tools/types'
+import { experiments } from './experiments'
+import type { Engine, JsonSchema } from './experiments/types'
 
-const engines = tools.map((t) => t.engine).filter((e): e is Engine => Boolean(e))
+const engines = experiments.map((x) => x.engine).filter((e): e is Engine => Boolean(e))
 
 /** Convert an engine's JSON Schema (object) into a zod raw shape for MCP tool registration. */
 function toZodShape(schema: JsonSchema): ZodRawShape {

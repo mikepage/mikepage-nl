@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
-import { ToolShell } from '../components/tool-shell'
+import { ExperimentShell } from '../components/experiment-shell'
 import { dohQuery, RECORD_TYPES, unquoteTxt, type DohAnswer, type DohResponse } from '../lib/doh'
 import { isDomain } from '../lib/domain'
-import type { Engine, Tool } from './types'
+import type { Engine, Experiment } from './types'
 
 interface Input {
   name: string
@@ -72,7 +72,7 @@ router.get('/', async (c) => {
   }
   return c.html(
     <Layout title="DNS lookup — mikepage.nl">
-      <ToolShell tool={dnsLookup}>
+      <ExperimentShell experiment={dnsLookup}>
         <form method="get">
           <input type="text" name="name" placeholder="example.com" value={name} required />
           <select name="type">
@@ -98,12 +98,12 @@ router.get('/', async (c) => {
             JSON: <a href={`/experiments/dns-lookup/api?name=${name}&type=${type}`}>/experiments/dns-lookup/api?name={name}&type={type}</a>
           </p>
         )}
-      </ToolShell>
+      </ExperimentShell>
     </Layout>
   )
 })
 
-export const dnsLookup: Tool = {
+export const dnsLookup: Experiment = {
   slug: 'dns-lookup',
   title: 'DNS lookup',
   summary: 'Query any DNS record type over Cloudflare DNS-over-HTTPS, straight from the edge.',

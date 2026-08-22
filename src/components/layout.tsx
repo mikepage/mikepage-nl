@@ -25,13 +25,12 @@ export const Layout = (props: { title: string; children: Child }) => (
       <div class="stars"></div>
       <div class="stars2"></div>
       <div class="stars3"></div>
-      <div class="relative z-10 mx-auto max-w-[54rem] px-6 pt-14 pb-20">
-        <header class="mb-[4.5rem] flex flex-wrap items-baseline gap-4">
-          <a class="font-display text-[1.5rem] font-semibold text-ink no-underline hover:text-glow" href="/">
+      <header id="bar" class="site-bar">
+        <div class="mx-auto flex max-w-[60rem] items-center gap-4 px-6 py-3.5">
+          <a class="font-display text-[1.25rem] font-semibold text-ink no-underline hover:text-glow" href="/">
             mikepage.nl
           </a>
-          <span class="text-[0.95rem] text-muted">Building on the Cloudflare Developer Platform</span>
-          <nav class="ml-auto flex gap-5">
+          <nav class="ml-auto flex items-center gap-6">
             <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/">
               Posts
             </a>
@@ -45,7 +44,9 @@ export const Layout = (props: { title: string; children: Child }) => (
               Experiments
             </a>
           </nav>
-        </header>
+        </div>
+      </header>
+      <div class="relative z-10 mx-auto max-w-[54rem] px-6 pt-12 pb-20">
         <main>{props.children}</main>
         <footer class="mt-24 border-t border-line pt-6 text-[0.95rem] text-muted">
           Built after dark by Mike Page, resident night owl 🦉 —{' '}
@@ -53,6 +54,11 @@ export const Layout = (props: { title: string; children: Child }) => (
           <a href="https://github.com/mikepage/mikepage-nl">source for this site</a>
         </footer>
       </div>
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){var b=document.getElementById('bar');var last=0;addEventListener('scroll',function(){var y=window.scrollY||0;if(y>last&&y>96)b.classList.add('is-hidden');else b.classList.remove('is-hidden');last=y},{passive:true})})()`,
+        }}
+      />
     </body>
   </html>
 )

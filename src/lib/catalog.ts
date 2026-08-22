@@ -1,5 +1,5 @@
 import { posts } from '../posts'
-import { tools } from '../tools'
+import { experiments } from '../experiments'
 
 /** llms.txt — the map agents look for first. https://llmstxt.org */
 export function llmsTxt(origin: string): string {
@@ -13,10 +13,10 @@ export function llmsTxt(origin: string): string {
   for (const post of posts) lines.push(`- [${post.title}](${origin}/posts/${post.slug}): ${post.summary}`)
 
   lines.push('', '## Experiments')
-  for (const tool of tools) {
-    const api = tool.engine ? ` JSON API: ${origin}/experiments/${tool.slug}/api` : ''
-    const mcp = tool.engine ? ` MCP tool: \`${tool.engine.name}\`.` : ''
-    lines.push(`- [${tool.title}](${origin}/experiments/${tool.slug}): ${tool.summary}${api}${mcp}`)
+  for (const x of experiments) {
+    const api = x.engine ? ` JSON API: ${origin}/experiments/${x.slug}/api` : ''
+    const mcp = x.engine ? ` MCP tool: \`${x.engine.name}\`.` : ''
+    lines.push(`- [${x.title}](${origin}/experiments/${x.slug}): ${x.summary}${api}${mcp}`)
   }
 
   lines.push(
@@ -51,8 +51,8 @@ export function robotsTxt(origin: string): string {
   return lines.join('\n')
 }
 
-function engineTools(origin: string) {
-  return tools
+function engineExperiments(origin: string) {
+  return experiments
     .filter((t) => t.engine)
     .map((t) => ({
       id: t.engine!.name,
@@ -69,7 +69,7 @@ export function agentSkills(origin: string): object {
     version: '0.2.0',
     name: 'mikepage-tools',
     description: 'Read-only edge tools for DNS, email authentication, and domain data.',
-    skills: engineTools(origin).map((t) => ({
+    skills: engineExperiments(origin).map((t) => ({
       id: t.id,
       name: t.name,
       description: t.description,
@@ -93,7 +93,7 @@ export function a2aCard(origin: string): object {
     capabilities: { streaming: false, pushNotifications: false },
     defaultInputModes: ['application/json'],
     defaultOutputModes: ['application/json'],
-    skills: engineTools(origin).map((t) => ({
+    skills: engineExperiments(origin).map((t) => ({
       id: t.id,
       name: t.name,
       description: t.description,
@@ -115,7 +115,7 @@ export function aiCatalog(origin: string): object {
       { identifier: 'llms', displayName: 'llms.txt', type: 'llms', url: `${origin}/llms.txt` },
       { identifier: 'agent-card', displayName: 'A2A Agent Card', type: 'agent-card', url: `${origin}/.well-known/agent-card.json` },
       { identifier: 'agent-skills', displayName: 'Agent Skills', type: 'agent-skills', url: `${origin}/.well-known/agent-skills/index.json` },
-      ...engineTools(origin).map(({ id, name, description, endpoint }) => ({
+      ...engineExperiments(origin).map(({ id, name, description, endpoint }) => ({
         identifier: id,
         displayName: name,
         type: 'tool',
@@ -163,7 +163,7 @@ export function mcpCard(origin: string): object {
     endpoint: `${origin}/mcp`,
     transport: 'streamable-http',
     authentication: 'none',
-    tools: tools
+    tools: experiments
       .filter((t) => t.engine)
       .map((t) => ({ name: t.engine!.name, description: t.engine!.description })),
   }
@@ -172,15 +172,15 @@ export function mcpCard(origin: string): object {
 /** Minimal OpenAPI 3.1 doc for the tools' JSON endpoints. */
 export function openApi(origin: string): object {
   const paths: Record<string, unknown> = {}
-  for (const tool of tools) {
-    const engine = tool.engine
+  for (const x of experiments) {
+    const engine = x.engine
     if (!engine) continue
     const props = (engine.inputSchema.properties ?? {}) as Record<string, { type?: string; description?: string; enum?: unknown[] }>
     const required = new Set((engine.inputSchema.required as string[]) ?? [])
-    paths[`/experiments/${tool.slug}/api`] = {
+    paths[`/experiments/${x.slug}/api`] = {
       get: {
         operationId: engine.name,
-        summary: tool.title,
+        summary: x.title,
         description: engine.description,
         parameters: Object.entries(props).map(([name, def]) => ({
           name,

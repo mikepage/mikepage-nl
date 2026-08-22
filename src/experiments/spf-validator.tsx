@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
-import { ToolShell } from '../components/tool-shell'
+import { ExperimentShell } from '../components/experiment-shell'
 import { txtRecords } from '../lib/doh'
 import { isDomain, isDnsName } from '../lib/domain'
-import type { Engine, Tool } from './types'
+import type { Engine, Experiment } from './types'
 
 interface SpfNode {
   domain: string
@@ -119,7 +119,7 @@ router.get('/', async (c) => {
   }
   return c.html(
     <Layout title="SPF validator — mikepage.nl">
-      <ToolShell tool={spfValidator}>
+      <ExperimentShell experiment={spfValidator}>
         <form method="get">
           <input type="text" name="domain" placeholder="example.com" value={domain} required />
           <button type="submit">Validate</button>
@@ -151,12 +151,12 @@ router.get('/', async (c) => {
             )}
           </>
         )}
-      </ToolShell>
+      </ExperimentShell>
     </Layout>
   )
 })
 
-export const spfValidator: Tool = {
+export const spfValidator: Experiment = {
   slug: 'spf-validator',
   title: 'SPF validator',
   summary: 'Resolve a domain’s SPF record, walk every include, and count the 10-lookup budget.',

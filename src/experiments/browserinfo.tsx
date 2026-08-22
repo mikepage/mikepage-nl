@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
-import { ToolShell } from '../components/tool-shell'
-import type { Tool } from './types'
+import { ExperimentShell } from '../components/experiment-shell'
+import type { Experiment } from './types'
 
 const CF_FIELDS = [
   ['colo', 'Cloudflare datacenter serving you'],
@@ -24,7 +24,7 @@ router.get('/', (c) => {
   const headers = ['cf-connecting-ip', 'user-agent', 'accept-language', 'accept-encoding', 'sec-ch-ua-platform']
   return c.html(
     <Layout title="Browser info — mikepage.nl">
-      <ToolShell tool={browserinfo}>
+      <ExperimentShell experiment={browserinfo}>
         <h2>What Cloudflare knows (request.cf)</h2>
         <dl class="facts">
           {CF_FIELDS.filter(([key]) => cf[key] != null).map(([key, label]) => (
@@ -49,12 +49,12 @@ router.get('/', (c) => {
           Every field above arrives free on <code>request.cf</code> — no geo-IP database, no client-side JavaScript. (Empty
           fields when running under <code>wrangler dev</code> are normal; the edge fills them in production.)
         </p>
-      </ToolShell>
+      </ExperimentShell>
     </Layout>
   )
 })
 
-export const browserinfo: Tool = {
+export const browserinfo: Experiment = {
   slug: 'browserinfo',
   title: 'Browser info',
   summary: 'Everything this Worker can tell about your connection without a single line of client JavaScript.',

@@ -1,8 +1,8 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
-import { ToolShell } from '../components/tool-shell'
+import { ExperimentShell } from '../components/experiment-shell'
 import { isDomain } from '../lib/domain'
-import type { Engine, Tool } from './types'
+import type { Engine, Experiment } from './types'
 
 interface RdapEvent {
   eventAction: string
@@ -90,7 +90,7 @@ router.get('/', async (c) => {
   }
   return c.html(
     <Layout title="RDAP lookup — mikepage.nl">
-      <ToolShell tool={rdapLookup}>
+      <ExperimentShell experiment={rdapLookup}>
         <form method="get">
           <input type="text" name="domain" placeholder="example.com" value={domain} required />
           <button type="submit">Look up</button>
@@ -114,12 +114,12 @@ router.get('/', async (c) => {
             <dd>{data.nameservers.length ? data.nameservers.join(', ') : '—'}</dd>
           </dl>
         )}
-      </ToolShell>
+      </ExperimentShell>
     </Layout>
   )
 })
 
-export const rdapLookup: Tool = {
+export const rdapLookup: Experiment = {
   slug: 'rdap-lookup',
   title: 'RDAP lookup',
   summary: 'Registration data for any domain — the structured successor to WHOIS.',

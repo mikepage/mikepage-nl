@@ -17,7 +17,7 @@ export interface Engine<I = unknown, R = unknown> {
   run(input: I): Promise<R>
 }
 
-export interface Tool {
+export interface Experiment {
   slug: string
   title: string
   summary: string

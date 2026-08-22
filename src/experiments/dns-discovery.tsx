@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
-import { ToolShell } from '../components/tool-shell'
+import { ExperimentShell } from '../components/experiment-shell'
 import { dohQuery, unquoteTxt, type DohAnswer } from '../lib/doh'
 import { isDomain } from '../lib/domain'
-import type { Engine, Tool } from './types'
+import type { Engine, Experiment } from './types'
 
 // Names probed relative to the apex, plus the special-use prefixes worth surfacing.
 const SUBDOMAINS = ['www', 'mail', 'smtp', 'imap', 'pop', 'webmail', 'autodiscover', 'autoconfig', 'ftp', 'vpn', 'remote', 'api', 'cdn', 'blog', 'shop', 'dev', 'staging', 'test', 'ns1', 'ns2', 'm', 'app']
@@ -132,7 +132,7 @@ router.get('/', async (c) => {
   const total = result ? result.apex.length + result.email.length + result.subdomains.length : 0
   return c.html(
     <Layout title="DNS discovery — mikepage.nl">
-      <ToolShell tool={dnsDiscovery}>
+      <ExperimentShell experiment={dnsDiscovery}>
         <form method="get">
           <input type="text" name="domain" placeholder="example.com" value={domain} required />
           <button type="submit">Discover</button>
@@ -154,12 +154,12 @@ router.get('/', async (c) => {
           curated wordlist over DNS-over-HTTPS (no zone transfer), so this shows the common names, not every record that
           exists.
         </p>
-      </ToolShell>
+      </ExperimentShell>
     </Layout>
   )
 })
 
-export const dnsDiscovery: Tool = {
+export const dnsDiscovery: Experiment = {
   slug: 'dns-discovery',
   title: 'DNS discovery',
   summary: 'Scan a domain for its apex records, email-auth setup, and common subdomains in one shot.',

@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
-import { ToolShell } from '../components/tool-shell'
+import { ExperimentShell } from '../components/experiment-shell'
 import { txtRecords } from '../lib/doh'
 import { isDomain } from '../lib/domain'
-import type { Engine, Tool } from './types'
+import type { Engine, Experiment } from './types'
 
 interface Check {
   level: 'ok' | 'warn' | 'err'
@@ -90,7 +90,7 @@ router.get('/', async (c) => {
   }
   return c.html(
     <Layout title="DMARC validator — mikepage.nl">
-      <ToolShell tool={dmarcValidator}>
+      <ExperimentShell experiment={dmarcValidator}>
         <form method="get">
           <input type="text" name="domain" placeholder="example.com" value={domain} required />
           <button type="submit">Validate</button>
@@ -114,12 +114,12 @@ router.get('/', async (c) => {
             </ul>
           </>
         ))}
-      </ToolShell>
+      </ExperimentShell>
     </Layout>
   )
 })
 
-export const dmarcValidator: Tool = {
+export const dmarcValidator: Experiment = {
   slug: 'dmarc-validator',
   title: 'DMARC validator',
   summary: 'Fetch a domain’s _dmarc TXT record and check the policy for common mistakes.',

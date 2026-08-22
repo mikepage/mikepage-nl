@@ -1,10 +1,10 @@
 import { Hono } from 'hono'
 import { connect } from 'cloudflare:sockets'
 import { Layout } from '../components/layout'
-import { ToolShell } from '../components/tool-shell'
+import { ExperimentShell } from '../components/experiment-shell'
 import { assertPublicHost } from '../lib/doh'
 import { isDomain } from '../lib/domain'
-import type { Engine, Tool } from './types'
+import type { Engine, Experiment } from './types'
 
 const PORTS = [587, 465, 2525] as const
 
@@ -99,7 +99,7 @@ router.get('/', async (c) => {
   }
   return c.html(
     <Layout title="SMTP submission test — mikepage.nl">
-      <ToolShell tool={smtpSubmissionTest}>
+      <ExperimentShell experiment={smtpSubmissionTest}>
         <form method="get">
           <input type="text" name="host" placeholder="smtp.example.com" value={host} required />
           <select name="port">
@@ -134,12 +134,12 @@ router.get('/', async (c) => {
           Runs over a raw TCP socket from this Worker via <code>cloudflare:sockets</code>. Outbound port 25 is blocked on the
           platform, which is exactly why this tests <em>submission</em> (587/465), not relay.
         </p>
-      </ToolShell>
+      </ExperimentShell>
     </Layout>
   )
 })
 
-export const smtpSubmissionTest: Tool = {
+export const smtpSubmissionTest: Experiment = {
   slug: 'smtp-submission-test',
   title: 'SMTP submission test',
   summary: 'Open a raw TCP connection to a mail server’s submission port and read its banner and EHLO capabilities.',
