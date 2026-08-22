@@ -25,7 +25,7 @@ export const Layout = (props: { title: string; children: Child }) => (
       <div class="stars"></div>
       <div class="stars2"></div>
       <div class="stars3"></div>
-      <div class="relative z-10 mx-auto max-w-[46rem] px-6 pt-14 pb-20">
+      <div class="relative z-10 mx-auto max-w-[54rem] px-6 pt-14 pb-20">
         <header class="mb-[4.5rem] flex flex-wrap items-baseline gap-4">
           <a class="font-display text-[1.5rem] font-semibold text-ink no-underline hover:text-glow" href="/">
             mikepage.nl
@@ -38,14 +38,16 @@ export const Layout = (props: { title: string; children: Child }) => (
             <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/tools">
               Tools
             </a>
+            <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/skills">
+              Skills
+            </a>
           </nav>
         </header>
         <main>{props.children}</main>
         <footer class="mt-24 border-t border-line pt-6 text-[0.95rem] text-muted">
           Built after dark by Mike Page, resident night owl 🦉 —{' '}
           <a href="https://github.com/mikepage">GitHub</a> ·{' '}
-          <a href="https://github.com/mikepage/mikepage-nl">source for this site</a> ·{' '}
-          <a href="https://isitagentready.com/mikepage.nl">agent-readiness</a>
+          <a href="https://github.com/mikepage/mikepage-nl">source for this site</a>
         </footer>
       </div>
     </body>

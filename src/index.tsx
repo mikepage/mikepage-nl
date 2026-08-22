@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
-import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard, agentSkills, a2aCard, aiCatalog } from './lib/catalog'
+import { skills } from './skills'
+import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard, agentSkills, a2aCard, aiCatalog, protectedResource } from './lib/catalog'
 import { negotiate } from './lib/negotiate'
 import { allow, clientKey } from './lib/rate-limit'
 import { ToolsMcp } from './mcp'
@@ -35,39 +36,70 @@ app.get('/.well-known/mcp.json', (c) => c.json(mcpCard(new URL(c.req.url).origin
 app.get('/.well-known/agent-skills/index.json', (c) => c.json(agentSkills(new URL(c.req.url).origin)))
 app.get('/.well-known/agent-card.json', (c) => c.json(a2aCard(new URL(c.req.url).origin)))
 app.get('/.well-known/ai-catalog.json', (c) => c.json(aiCatalog(new URL(c.req.url).origin)))
+app.get('/.well-known/oauth-protected-resource', (c) => c.json(protectedResource(new URL(c.req.url).origin)))
+app.get('/.well-known/oauth-protected-resource/mcp', (c) => {
+  const origin = new URL(c.req.url).origin
+  return c.json(protectedResource(origin, `${origin}/mcp`))
+})
 
 const authMd = (c: { req: { url: string } }) => {
   const origin = new URL(c.req.url).origin
-  return `# Auth.md
+  return `# AUTH.md
 
-## Authentication
+This service exposes agentic tools that require **no authentication**. It follows the
+[Auth.md](https://github.com/workos/auth.md) agentic registration flow using the
+\`anonymous\` method — agents connect without an identity assertion, consent, or token exchange.
 
-The tools API (\`/tools/*/api\`) and the MCP server (\`/mcp\`) are **authless** — no key, token, or OAuth required. They are read-only lookups over public data, rate-limited per IP.
+## Discovery
+
+- MCP endpoint: ${origin}/mcp (Streamable HTTP)
+- MCP server card: ${origin}/.well-known/mcp.json
+- OpenAPI: ${origin}/openapi.json
+- Protected Resource Metadata (PRM): ${origin}/.well-known/oauth-protected-resource (declares an authless resource — empty \`authorization_servers\`)
+- Authorization Server metadata: none — there is no OAuth authorization server
+
+## Registration methods
+
+| Method | Supported | Notes |
+| --- | --- | --- |
+| \`anonymous\` | yes | No identity assertion needed. Default and only method. |
+| \`identity_assertion\` (ID-JAG) | no | No user session or identity binding is used. |
+| \`service_auth\` | no | No email-based claim ceremony. |
 
 ## Registration
 
-- Registration: not required (open access)
-- Registration endpoint: none
-- Dynamic Client Registration: not supported (no OAuth)
-- Credentials: none
-- Scopes: none
+No registration is required. There is no \`/agent/identity\` endpoint and no user consent
+step — agent access is open and anonymous.
 
-Agents and clients connect immediately, with no signup, API key, token, or client registration step:
+## Claim ceremony
 
-- MCP endpoint: ${origin}/mcp (Streamable HTTP, no credentials)
-- JSON API: ${origin}/tools/<tool>/api
-- Discovery: ${origin}/llms.txt and ${origin}/.well-known/mcp.json
+Not applicable — the \`anonymous\` method skips the six-digit code claim ceremony.
 
-## Access
+## Token exchange
 
-To register an agent, no action is needed — begin calling the endpoints above. Access is anonymous and rate-limited per IP.
+Not applicable. There is no \`/oauth2/token\` endpoint and no RFC 7523 JWT-bearer grant;
+requests carry no \`access_token\`.
+
+## API usage
+
+Call the tools directly, with no \`Authorization\` header:
+
+- MCP: connect an MCP client to ${origin}/mcp
+- JSON: \`GET ${origin}/tools/<tool>/api\`
+
+Access is anonymous and rate-limited per IP.
+
+## Revocation
+
+Not applicable — no credentials or registrations exist to revoke.
 `
 }
 app.get('/auth.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
+app.get('/AUTH.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
 app.get('/.well-known/auth.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
 app.get('/sitemap.xml', (c) => {
   const origin = new URL(c.req.url).origin
-  const urls = ['/', '/tools', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/tools/${t.slug}`)]
+  const urls = ['/', '/tools', '/skills', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/tools/${t.slug}`)]
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
     .map((u) => `  <url><loc>${origin}${u}</loc></url>`)
     .join('\n')}\n</urlset>\n`
@@ -133,6 +165,37 @@ app.get('/tools', (c) =>
           </li>
         ))}
       </ul>
+    </Layout>
+  )
+)
+
+app.get('/skills', (c) =>
+  c.html(
+    <Layout title="Skills — mikepage.nl">
+      <h1>Skills</h1>
+      <p class="lede">
+        Copy-pasteable recipes for making a site agent-friendly — the real building blocks this
+        Worker runs on. No dependencies to clone; just the snippet.
+      </p>
+      {skills.map((skill) => (
+        <div class="skill" id={skill.id}>
+          <div class="skill-head">
+            <h2>{skill.title}</h2>
+            <button type="button" class="copy" data-copy>
+              Copy
+            </button>
+          </div>
+          <p>{skill.description}</p>
+          <pre>
+            <code>{skill.code}</code>
+          </pre>
+        </div>
+      ))}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var c=b.closest('.skill').querySelector('pre code').innerText;navigator.clipboard.writeText(c).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)})})})`,
+        }}
+      />
     </Layout>
   )
 )

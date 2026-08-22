@@ -132,6 +132,22 @@
   .facts dt { @apply text-muted; }
   .facts dd { margin: 0; overflow-wrap: anywhere; }
 
+  /* Skills page — copy-pasteable recipe cards */
+  .skill { @apply rounded-2xl border border-line bg-card; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+  .skill-head { @apply flex items-center justify-between gap-4; }
+  .skill h2 { margin: 0; font-size: 1.15rem; }
+  .skill .copy {
+    @apply bg-code border border-line text-muted;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    flex: none;
+  }
+  .skill .copy:hover { color: var(--color-glow); }
+  .skill p { @apply text-muted; margin: 0.5rem 0 0.75rem; font-size: 0.95rem; }
+
   /* Nested SPF include tree — left guide line per level (the ├─ connectors are the edge case, kept raw) */
   .tree, .tree ul { @apply list-none; }
   .tree { padding: 0; margin: 1rem 0; }

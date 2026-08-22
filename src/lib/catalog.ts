@@ -139,6 +139,21 @@ export function apiCatalog(origin: string): object {
   }
 }
 
+/**
+ * OAuth Protected Resource Metadata (RFC 9728). Declares an authless resource:
+ * empty authorization_servers = no auth. Safe for the authless MCP because clients
+ * only start an OAuth flow after a 401 + WWW-Authenticate, which /mcp never returns.
+ */
+export function protectedResource(origin: string, resource = origin): object {
+  return {
+    resource,
+    authorization_servers: [],
+    bearer_methods_supported: [],
+    scopes_supported: [],
+    resource_documentation: `${origin}/auth.md`,
+  }
+}
+
 /** MCP server discovery card. */
 export function mcpCard(origin: string): object {
   return {
