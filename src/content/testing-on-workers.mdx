@@ -1,0 +1,59 @@
+---
+title: Testing a Worker in real workerd with the Vitest plugin
+date: 2026-08-23
+order: 4
+summary: The Cloudflare Vitest plugin runs tests inside workerd, so bindings, Durable Objects, sockets and content negotiation all work — no mocks. Here's how this site tests itself.
+---
+
+Unit tests over pure functions are easy. The hard part of a Worker is everything that only exists on the edge: bindings, Durable Objects, `cloudflare:sockets`, the `request.cf` object, content negotiation. Mocking all of that is a losing game. The **Cloudflare Vitest plugin** sidesteps it by running your tests *inside* workerd — the same runtime that serves production.
+
+## Setup
+
+As of August 2026 the package is `@cloudflare/vitest-plugin` (formerly `@cloudflare/vitest-pool-workers`), and it targets Vitest 4:
+
+```sh
+npm install -D vitest @cloudflare/vitest-plugin
+```
+
+```ts
+// vitest.config.ts
+import { cloudflareTest } from '@cloudflare/vitest-plugin'
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  plugins: [cloudflareTest({ wrangler: { configPath: './wrangler.jsonc' } })],
+})
+```
+
+Pointing it at `wrangler.jsonc` means the test worker gets the *real* config: the Durable Object migration, the rate-limit binding, and the text-module rule that lets the Worker `import` its built CSS — all present, no hand-wiring.
+
+## Integration tests hit the real worker
+
+`SELF.fetch()` sends a request through your deployed `fetch` handler — routing, middleware, redirects and all:
+
+```ts
+import { SELF } from 'cloudflare:test'
+import { it, expect } from 'vitest'
+
+it('redirects www to the apex domain', async () => {
+  const res = await SELF.fetch('https://www.mikepage.nl/tools', { redirect: 'manual' })
+  expect(res.status).toBe(301)
+  expect(res.headers.get('location')).toBe('https://mikepage.nl/tools')
+})
+
+it('negotiates markdown', async () => {
+  const res = await SELF.fetch('https://mikepage.nl/', { headers: { accept: 'text/markdown' } })
+  expect(res.headers.get('content-type')).toContain('text/markdown')
+})
+```
+
+Because this is real workerd, the MCP Durable Object spins up, the SMTP tool's `cloudflare:sockets` import resolves, and the rate-limit binding exists — the tests exercise the actual site, not a simulation.
+
+## What this site tests
+
+- **Unit**: `isDomain`/`isDnsName`, the content-negotiation helper, TXT unquoting.
+- **Integration**: home + markdown negotiation, tools and skills indexes, a post's skill notice, `.md` post serving, an installable `SKILL.md`, JSON-API validation (400s), `llms.txt`/`robots.txt`/`mcp.json`, Link headers, and the www→apex redirect.
+
+## One gotcha
+
+Avoid real network calls in tests (the DNS tools hit DNS-over-HTTPS). Test the *validation and routing* paths instead — e.g. assert `/tools/dns-lookup/api?name=notadomain` returns 400 — and mock outbound fetches when you must, with `@msw/cloudflare`. Deterministic tests beat live lookups.

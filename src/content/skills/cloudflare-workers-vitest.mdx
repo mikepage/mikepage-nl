@@ -1,0 +1,49 @@
+---
+description: Test a Cloudflare Worker inside real workerd with the @cloudflare/vitest-plugin, exercising bindings, Durable Objects, sockets, and routes via SELF.fetch. Use when adding tests to a Worker, setting up vitest.config, or testing routes with real bindings.
+post: testing-on-workers
+postTitle: Testing a Worker in real workerd with the Vitest plugin
+order: 5
+---
+
+# Cloudflare Workers Vitest
+
+Run tests inside workerd so bindings, Durable Objects, and `cloudflare:sockets` work with no mocks.
+
+## Install
+
+```sh
+npm install -D vitest @cloudflare/vitest-plugin
+```
+
+(The package was renamed from `@cloudflare/vitest-pool-workers`; it targets Vitest 4. Migrate an old setup with `npx @cloudflare/codemods vitest:pool-workers-to-vitest-plugin`.)
+
+## Configure
+
+```ts
+// vitest.config.ts
+import { cloudflareTest } from '@cloudflare/vitest-plugin'
+import { defineConfig } from 'vitest/config'
+
+export default defineConfig({
+  plugins: [cloudflareTest({ wrangler: { configPath: './wrangler.jsonc' } })],
+})
+```
+
+Reading `wrangler.jsonc` gives the test worker your real bindings, DO migrations, and module rules.
+
+## Integration test
+
+```ts
+import { SELF } from 'cloudflare:test'
+import { it, expect } from 'vitest'
+
+it('serves the home page', async () => {
+  const res = await SELF.fetch('https://example.com/')
+  expect(res.status).toBe(200)
+})
+```
+
+## Notes
+- `SELF.fetch()` runs the whole `fetch` handler — routing, middleware, redirects.
+- Build any generated assets (CSS, compiled content) before `vitest run`.
+- Don't call real external APIs in tests; assert validation/routing paths, and mock outbound fetches with `@msw/cloudflare`.

@@ -193,27 +193,29 @@ app.get('/skills', (c) =>
         Installable Claude Code skills distilled from the posts. Each is a <code>SKILL.md</code> —
         drop it in <code>.claude/skills/&lt;name&gt;/SKILL.md</code> and your agent picks it up.
       </p>
-      {skills.map((skill) => (
-        <div class="skill" id={skill.id}>
-          <div class="skill-head">
-            <h2>{skill.id}</h2>
-            <button type="button" class="copy" data-copy>
-              Copy SKILL.md
-            </button>
-          </div>
-          <p>{skill.description}</p>
-          <p class="meta">
-            From: <a href={`/posts/${skill.post}`}>{skill.postTitle}</a> · Raw:{' '}
-            <a href={`/skills/${skill.id}`}>/skills/{skill.id}</a>
-          </p>
-          <pre>
-            <code>{skillMd(skill)}</code>
-          </pre>
-        </div>
-      ))}
+      {[...skills]
+        .sort((a, b) => a.id.localeCompare(b.id))
+        .map((skill) => (
+          <details class="skill" id={skill.id}>
+            <summary>
+              <span class="skill-name">{skill.id}</span>
+            </summary>
+            <p>{skill.description}</p>
+            <p class="meta">
+              From: <a href={`/posts/${skill.post}`}>{skill.postTitle}</a> · Raw:{' '}
+              <a href={`/skills/${skill.id}`}>/skills/{skill.id}</a>{' '}
+              <button type="button" class="copy" data-copy>
+                Copy SKILL.md
+              </button>
+            </p>
+            <pre>
+              <code>{skillMd(skill)}</code>
+            </pre>
+          </details>
+        ))}
       <script
         dangerouslySetInnerHTML={{
-          __html: `document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var c=b.closest('.skill').querySelector('pre code').innerText;navigator.clipboard.writeText(c).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy SKILL.md'},1500)})})})`,
+          __html: `function openHash(){var h=decodeURIComponent(location.hash.slice(1));if(!h)return;var d=document.getElementById(h);if(d&&d.tagName==='DETAILS'){d.open=true;d.scrollIntoView()}}openHash();addEventListener('hashchange',openHash);document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var c=b.closest('.skill').querySelector('pre code').innerText;navigator.clipboard.writeText(c).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy SKILL.md'},1500)})})})`,
         }}
       />
     </Layout>
