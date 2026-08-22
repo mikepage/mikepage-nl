@@ -3,7 +3,12 @@
   "name": "mikepage-nl",
   "main": "src/index.tsx",
   "compatibility_date": "2026-08-22",
-  "rules": [{ "type": "Text", "globs": ["**/*.generated.css"] }]
+  "compatibility_flags": ["nodejs_compat"],
+  "rules": [{ "type": "Text", "globs": ["**/*.generated.css"] }],
+  "durable_objects": {
+    "bindings": [{ "name": "MYMCP", "class_name": "ToolsMcp" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ToolsMcp"] }]
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],

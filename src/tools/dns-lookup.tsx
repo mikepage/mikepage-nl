@@ -1,9 +1,35 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
 import { ToolShell } from '../components/tool-shell'
-import { dohQuery, RECORD_TYPES, unquoteTxt, type DohAnswer } from '../lib/doh'
+import { dohQuery, RECORD_TYPES, unquoteTxt, type DohAnswer, type DohResponse } from '../lib/doh'
 import { isDomain } from '../lib/domain'
-import type { Tool } from './types'
+import type { Engine, Tool } from './types'
+
+interface Input {
+  name: string
+  type: string
+}
+
+const engine: Engine<Input, DohResponse> = {
+  name: 'dns_lookup',
+  description: 'Query a DNS record for a domain over Cloudflare DNS-over-HTTPS. Returns the raw DoH JSON response.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      name: { type: 'string', description: 'Domain name to query, e.g. example.com' },
+      type: { type: 'string', enum: [...RECORD_TYPES], default: 'A', description: 'DNS record type' },
+    },
+    required: ['name'],
+  },
+  parse(q) {
+    const name = (q.name ?? '').trim()
+    const type = (q.type ?? 'A').toUpperCase()
+    if (!isDomain(name)) return { error: 'invalid domain' }
+    if (!(RECORD_TYPES as readonly string[]).includes(type)) return { error: 'unsupported record type' }
+    return { input: { name, type } }
+  },
+  run: ({ name, type }) => dohQuery(name, type),
+}
 
 const router = new Hono()
 
@@ -31,14 +57,14 @@ const Results = ({ answers, type }: { answers: DohAnswer[]; type: string }) => (
 router.get('/', async (c) => {
   const name = (c.req.query('name') ?? '').trim()
   const type = (c.req.query('type') ?? 'A').toUpperCase()
-  let result = null
-  let error = null
+  let result: DohResponse | null = null
+  let error: string | null = null
   if (name) {
-    if (!isDomain(name)) error = 'That does not look like a valid domain name.'
-    else if (!(RECORD_TYPES as readonly string[]).includes(type)) error = 'Unsupported record type.'
+    const parsed = engine.parse({ name, type })
+    if ('error' in parsed) error = parsed.error === 'invalid domain' ? 'That does not look like a valid domain name.' : 'Unsupported record type.'
     else {
       try {
-        result = await dohQuery(name, type)
+        result = await engine.run(parsed.input)
       } catch (e) {
         error = String(e)
       }
@@ -77,18 +103,11 @@ router.get('/', async (c) => {
   )
 })
 
-router.get('/api', async (c) => {
-  const name = (c.req.query('name') ?? '').trim()
-  const type = (c.req.query('type') ?? 'A').toUpperCase()
-  if (!isDomain(name)) return c.json({ error: 'invalid domain' }, 400)
-  if (!(RECORD_TYPES as readonly string[]).includes(type)) return c.json({ error: 'unsupported type' }, 400)
-  return c.json(await dohQuery(name, type))
-})
-
 export const dnsLookup: Tool = {
   slug: 'dns-lookup',
   title: 'DNS lookup',
   summary: 'Query any DNS record type over Cloudflare DNS-over-HTTPS, straight from the edge.',
   pattern: 'stateless fetch-out to cloudflare-dns.com/dns-query, plus a JSON API on the same router',
   router,
+  engine,
 }

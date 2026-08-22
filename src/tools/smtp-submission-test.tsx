@@ -4,7 +4,7 @@ import { Layout } from '../components/layout'
 import { ToolShell } from '../components/tool-shell'
 import { assertPublicHost } from '../lib/doh'
 import { isDomain } from '../lib/domain'
-import type { Tool } from './types'
+import type { Engine, Tool } from './types'
 
 const PORTS = [587, 465, 2525] as const
 
@@ -52,21 +52,46 @@ async function probe(host: string, port: number): Promise<SmtpProbe> {
   }
 }
 
+const engine: Engine<{ host: string; port: number }, SmtpProbe> = {
+  name: 'smtp_probe',
+  description: 'Open a raw TCP connection to a mail server’s submission port (587/465/2525) and return its banner and EHLO capabilities. Only public hostnames are allowed.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      host: { type: 'string', description: 'Mail server hostname, e.g. smtp.example.com' },
+      port: { type: 'integer', enum: [...PORTS], default: 587, description: 'Submission port (25 is blocked from Workers)' },
+    },
+    required: ['host'],
+  },
+  parse(q) {
+    const host = (q.host ?? '').trim().toLowerCase()
+    const port = Number(q.port ?? 587)
+    if (!isDomain(host)) return { error: 'invalid hostname' }
+    if (!(PORTS as readonly number[]).includes(port)) return { error: 'port must be 587, 465, or 2525' }
+    return { input: { host, port } }
+  },
+  async run({ host, port }) {
+    // SSRF guard: only connect to hostnames that resolve to public addresses.
+    const blocked = await assertPublicHost(host)
+    if (blocked) throw new Error(blocked)
+    return probe(host, port)
+  },
+}
+
 const router = new Hono()
 
 router.get('/', async (c) => {
   const host = (c.req.query('host') ?? '').trim().toLowerCase()
   const port = Number(c.req.query('port') ?? 587)
   let result: SmtpProbe | null = null
-  let error = null
+  let error: string | null = null
   if (host) {
-    if (!isDomain(host)) error = 'That does not look like a valid hostname.'
-    else if (!(PORTS as readonly number[]).includes(port)) error = 'Port must be 587, 465, or 2525. (Port 25 is blocked from Workers — by design.)'
-    else {
+    const parsed = engine.parse({ host, port: String(port) })
+    if ('error' in parsed) {
+      error = parsed.error === 'invalid hostname' ? 'That does not look like a valid hostname.' : 'Port must be 587, 465, or 2525. (Port 25 is blocked from Workers — by design.)'
+    } else {
       try {
-        // SSRF guard: only connect to hostnames that resolve to public addresses.
-        error = await assertPublicHost(host)
-        if (!error) result = await probe(host, port)
+        result = await engine.run(parsed.input)
       } catch (e) {
         error = `Could not probe ${host}:${port} — ${e instanceof Error ? e.message : String(e)}`
       }
@@ -120,4 +145,5 @@ export const smtpSubmissionTest: Tool = {
   summary: 'Open a raw TCP connection to a mail server’s submission port and read its banner and EHLO capabilities.',
   pattern: 'raw TCP from a Worker — cloudflare:sockets connect(); port 25 blocked, 587/465 allowed',
   router,
+  engine,
 }

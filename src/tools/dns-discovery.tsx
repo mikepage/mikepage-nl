@@ -3,7 +3,7 @@ import { Layout } from '../components/layout'
 import { ToolShell } from '../components/tool-shell'
 import { dohQuery, unquoteTxt, type DohAnswer } from '../lib/doh'
 import { isDomain } from '../lib/domain'
-import type { Tool } from './types'
+import type { Engine, Tool } from './types'
 
 // Names probed relative to the apex, plus the special-use prefixes worth surfacing.
 const SUBDOMAINS = ['www', 'mail', 'smtp', 'imap', 'pop', 'webmail', 'autodiscover', 'autoconfig', 'ftp', 'vpn', 'remote', 'api', 'cdn', 'blog', 'shop', 'dev', 'staging', 'test', 'ns1', 'ns2', 'm', 'app']
@@ -64,6 +64,22 @@ async function discover(domain: string): Promise<Discovery> {
   }
 }
 
+const engine: Engine<{ domain: string }, Discovery> = {
+  name: 'dns_discovery',
+  description: 'Scan a domain for its apex records, email-authentication setup (SPF/DMARC/DKIM/MTA-STS), and common subdomains in one shot via ~50 concurrent DoH probes. Discovery snapshot, not a monitor.',
+  inputSchema: {
+    type: 'object',
+    properties: { domain: { type: 'string', description: 'Domain to scan, e.g. example.com' } },
+    required: ['domain'],
+  },
+  parse(q) {
+    const domain = (q.domain ?? '').trim().toLowerCase().replace(/\.$/, '')
+    if (!isDomain(domain)) return { error: 'invalid domain' }
+    return { input: { domain } }
+  },
+  run: ({ domain }) => discover(domain),
+}
+
 const Section = ({ title, rows, empty }: { title: string; rows: Row[]; empty: string }) =>
   rows.length === 0 ? (
     <>
@@ -103,10 +119,11 @@ router.get('/', async (c) => {
   let result: Discovery | null = null
   let error = null
   if (domain) {
-    if (!isDomain(domain)) error = 'That does not look like a valid domain name.'
+    const parsed = engine.parse({ domain })
+    if ('error' in parsed) error = 'That does not look like a valid domain name.'
     else {
       try {
-        result = await discover(domain)
+        result = await engine.run(parsed.input)
       } catch (e) {
         error = String(e)
       }
@@ -148,4 +165,5 @@ export const dnsDiscovery: Tool = {
   summary: 'Scan a domain for its apex records, email-auth setup, and common subdomains in one shot.',
   pattern: 'fetch-out fan-out — ~50 concurrent DoH queries per request, gathered with Promise.all at the edge',
   router,
+  engine,
 }

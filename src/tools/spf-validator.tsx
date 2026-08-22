@@ -3,7 +3,7 @@ import { Layout } from '../components/layout'
 import { ToolShell } from '../components/tool-shell'
 import { txtRecords } from '../lib/doh'
 import { isDomain, isDnsName } from '../lib/domain'
-import type { Tool } from './types'
+import type { Engine, Tool } from './types'
 
 interface SpfNode {
   domain: string
@@ -67,6 +67,22 @@ async function evaluateSpf(domain: string, via: SpfNode['via'], seen: Set<string
   return result
 }
 
+const engine: Engine<{ domain: string }, SpfResult> = {
+  name: 'spf_check',
+  description: 'Resolve a domain’s SPF record, recursively walk every include/redirect, count the 10-lookup budget, and flag issues. Returns the full include tree.',
+  inputSchema: {
+    type: 'object',
+    properties: { domain: { type: 'string', description: 'Domain to check, e.g. example.com' } },
+    required: ['domain'],
+  },
+  parse(q) {
+    const domain = (q.domain ?? '').trim().toLowerCase()
+    if (!isDomain(domain)) return { error: 'invalid domain' }
+    return { input: { domain } }
+  },
+  run: ({ domain }) => evaluateSpf(domain, 'root', new Set(), 0),
+}
+
 const TreeNode = ({ node }: { node: SpfNode }) => (
   <li>
     <span class="tree-label">
@@ -91,10 +107,11 @@ router.get('/', async (c) => {
   let result: SpfResult | null = null
   let error = null
   if (domain) {
-    if (!isDomain(domain)) error = 'That does not look like a valid domain name.'
+    const parsed = engine.parse({ domain })
+    if ('error' in parsed) error = 'That does not look like a valid domain name.'
     else {
       try {
-        result = await evaluateSpf(domain, 'root', new Set(), 0)
+        result = await engine.run(parsed.input)
       } catch (e) {
         error = String(e)
       }
@@ -145,4 +162,5 @@ export const spfValidator: Tool = {
   summary: 'Resolve a domain’s SPF record, walk every include, and count the 10-lookup budget.',
   pattern: 'recursive fetch-out — one DoH query per include, fanned out from a single Worker request',
   router,
+  engine,
 }
