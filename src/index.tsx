@@ -3,10 +3,11 @@ import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
 import { llmsTxt, openApi } from './lib/catalog'
+import { allow, clientKey } from './lib/rate-limit'
 import { ToolsMcp } from './mcp'
 import css from './styles.generated.css'
 
-const app = new Hono()
+const app = new Hono<{ Bindings: CloudflareBindings }>()
 
 app.get('/styles.css', (c) =>
   c.text(css, 200, { 'Content-Type': 'text/css; charset=utf-8' })
@@ -89,6 +90,10 @@ for (const tool of tools) {
   if (engine) {
     // Generic JSON API for every tool with an engine — one source of truth with the HTML page.
     tool.router.get('/api', async (c) => {
+      const env = c.env as CloudflareBindings
+      if (!(await allow(env.API_RL, `api:${clientKey(c.req.raw)}`))) {
+        return c.json({ error: 'rate limit exceeded' }, 429)
+      }
       const parsed = engine.parse(c.req.query())
       if ('error' in parsed) return c.json({ error: parsed.error }, 400)
       try {
@@ -123,9 +128,12 @@ export { ToolsMcp }
 const mcpHandler = ToolsMcp.serve('/mcp', { binding: 'MYMCP' })
 
 export default {
-  fetch(request: Request, env: CloudflareBindings, ctx: ExecutionContext) {
+  async fetch(request: Request, env: CloudflareBindings, ctx: ExecutionContext) {
     const { pathname } = new URL(request.url)
     if (pathname === '/mcp' || pathname.startsWith('/mcp/')) {
+      if (!(await allow(env.API_RL, `mcp:${clientKey(request)}`))) {
+        return new Response('rate limit exceeded', { status: 429 })
+      }
       return mcpHandler.fetch(request, env, ctx)
     }
     return app.fetch(request, env, ctx)
