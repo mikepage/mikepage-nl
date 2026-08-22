@@ -36,7 +36,7 @@ export function llmsFull(origin: string): string {
   return parts.join('\n')
 }
 
-/** robots.txt with explicit AI-bot allowances and a Cloudflare content-signal. */
+/** robots.txt with explicit AI-bot allowances, a Cloudflare content-signal, and an Agentmap. */
 export function robotsTxt(origin: string): string {
   const aiBots = ['GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ClaudeBot', 'anthropic-ai', 'Claude-User', 'PerplexityBot', 'Google-Extended', 'CCBot', 'Bytespider']
   const lines = [
@@ -47,8 +47,83 @@ export function robotsTxt(origin: string): string {
     '# Read-only public tools — AI agents welcome to read and query.',
   ]
   for (const bot of aiBots) lines.push(`User-agent: ${bot}`, 'Allow: /', '')
-  lines.push(`Sitemap: ${origin}/sitemap.xml`, '')
+  lines.push(`Sitemap: ${origin}/sitemap.xml`, `Agentmap: ${origin}/.well-known/ai-catalog.json`, '')
   return lines.join('\n')
+}
+
+function engineTools(origin: string) {
+  return tools
+    .filter((t) => t.engine)
+    .map((t) => ({
+      id: t.engine!.name,
+      name: t.title,
+      description: t.engine!.description,
+      endpoint: `${origin}/tools/${t.slug}/api`,
+      inputSchema: t.engine!.inputSchema,
+    }))
+}
+
+/** Agent Skills index (agent-skills v0.2.0). */
+export function agentSkills(origin: string): object {
+  return {
+    version: '0.2.0',
+    name: 'mikepage-tools',
+    description: 'Read-only edge tools for DNS, email authentication, and domain data.',
+    skills: engineTools(origin).map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      endpoint: t.endpoint,
+      method: 'GET',
+      inputSchema: t.inputSchema,
+    })),
+  }
+}
+
+/** A2A Agent Card (/.well-known/agent-card.json). */
+export function a2aCard(origin: string): object {
+  return {
+    protocolVersion: '0.2.0',
+    name: 'mikepage-tools',
+    description: 'Read-only edge tools for DNS, email authentication, and domain data.',
+    url: `${origin}/mcp`,
+    preferredTransport: 'streamable-http',
+    supportedInterfaces: [{ url: `${origin}/mcp`, transport: 'streamable-http' }],
+    version: '1.0.0',
+    capabilities: { streaming: false, pushNotifications: false },
+    defaultInputModes: ['application/json'],
+    defaultOutputModes: ['application/json'],
+    skills: engineTools(origin).map((t) => ({
+      id: t.id,
+      name: t.name,
+      description: t.description,
+      tags: ['dns', 'email', 'domains'],
+    })),
+  }
+}
+
+/** ARD / ai-catalog capability manifest (/.well-known/ai-catalog.json). */
+export function aiCatalog(origin: string): object {
+  return {
+    specVersion: '1.0',
+    version: '1.0',
+    name: 'mikepage.nl',
+    description: 'Night-owl experiments on the edge — Cloudflare developer tools.',
+    entries: [
+      { identifier: 'mcp', displayName: 'MCP server', type: 'mcp', url: `${origin}/mcp`, transport: 'streamable-http' },
+      { identifier: 'openapi', displayName: 'OpenAPI', type: 'openapi', url: `${origin}/openapi.json` },
+      { identifier: 'llms', displayName: 'llms.txt', type: 'llms', url: `${origin}/llms.txt` },
+      { identifier: 'agent-card', displayName: 'A2A Agent Card', type: 'agent-card', url: `${origin}/.well-known/agent-card.json` },
+      { identifier: 'agent-skills', displayName: 'Agent Skills', type: 'agent-skills', url: `${origin}/.well-known/agent-skills/index.json` },
+      ...engineTools(origin).map(({ id, name, description, endpoint }) => ({
+        identifier: id,
+        displayName: name,
+        type: 'tool',
+        description,
+        url: endpoint,
+      })),
+    ],
+  }
 }
 
 /** RFC 9727 API catalog (application/linkset+json) pointing at the OpenAPI doc. */

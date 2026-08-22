@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
-import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard } from './lib/catalog'
+import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard, agentSkills, a2aCard, aiCatalog } from './lib/catalog'
 import { negotiate } from './lib/negotiate'
 import { allow, clientKey } from './lib/rate-limit'
 import { ToolsMcp } from './mcp'
@@ -32,13 +32,39 @@ app.get('/.well-known/api-catalog', (c) =>
   c.json(apiCatalog(new URL(c.req.url).origin), 200, { 'Content-Type': 'application/linkset+json' })
 )
 app.get('/.well-known/mcp.json', (c) => c.json(mcpCard(new URL(c.req.url).origin)))
-app.get('/.well-known/auth.md', (c) =>
-  c.text(
-    `# Authentication\n\nThe tools API (\`/tools/*/api\`) and the MCP server (\`/mcp\`) are **authless** — no key, token, or OAuth required. They are read-only lookups over public data, rate-limited per IP.\n`,
-    200,
-    { 'Content-Type': 'text/markdown; charset=utf-8' }
-  )
-)
+app.get('/.well-known/agent-skills/index.json', (c) => c.json(agentSkills(new URL(c.req.url).origin)))
+app.get('/.well-known/agent-card.json', (c) => c.json(a2aCard(new URL(c.req.url).origin)))
+app.get('/.well-known/ai-catalog.json', (c) => c.json(aiCatalog(new URL(c.req.url).origin)))
+
+const authMd = (c: { req: { url: string } }) => {
+  const origin = new URL(c.req.url).origin
+  return `# Auth.md
+
+## Authentication
+
+The tools API (\`/tools/*/api\`) and the MCP server (\`/mcp\`) are **authless** — no key, token, or OAuth required. They are read-only lookups over public data, rate-limited per IP.
+
+## Registration
+
+- Registration: not required (open access)
+- Registration endpoint: none
+- Dynamic Client Registration: not supported (no OAuth)
+- Credentials: none
+- Scopes: none
+
+Agents and clients connect immediately, with no signup, API key, token, or client registration step:
+
+- MCP endpoint: ${origin}/mcp (Streamable HTTP, no credentials)
+- JSON API: ${origin}/tools/<tool>/api
+- Discovery: ${origin}/llms.txt and ${origin}/.well-known/mcp.json
+
+## Access
+
+To register an agent, no action is needed — begin calling the endpoints above. Access is anonymous and rate-limited per IP.
+`
+}
+app.get('/auth.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
+app.get('/.well-known/auth.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
 app.get('/sitemap.xml', (c) => {
   const origin = new URL(c.req.url).origin
   const urls = ['/', '/tools', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/tools/${t.slug}`)]
@@ -48,8 +74,12 @@ app.get('/sitemap.xml', (c) => {
   return c.text(body, 200, { 'Content-Type': 'application/xml; charset=utf-8' })
 })
 
-app.get('/', (c) =>
-  c.html(
+app.get('/', (c) => {
+  // Markdown content negotiation on the home page (agents that send Accept: text/markdown)
+  if ((c.req.header('accept') ?? '').includes('text/markdown')) {
+    return c.text(llmsTxt(new URL(c.req.url).origin), 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
+  }
+  return c.html(
     <Layout title="mikepage.nl — Building on the Cloudflare Developer Platform">
       <h1>Night-owl experiments on the edge</h1>
       <p class="lede">
@@ -68,7 +98,7 @@ app.get('/', (c) =>
       </ul>
     </Layout>
   )
-)
+})
 
 app.get('/posts/:file', (c) => {
   const { id, format } = negotiate(c.req.param('file'), c.req.header('accept'))
@@ -151,7 +181,13 @@ const mcpHandler = ToolsMcp.serve('/mcp', { binding: 'MYMCP' })
 
 export default {
   async fetch(request: Request, env: CloudflareBindings, ctx: ExecutionContext) {
-    const { pathname } = new URL(request.url)
+    const url = new URL(request.url)
+    // Canonical host: redirect www → apex (301), preserving path and query.
+    if (url.hostname.startsWith('www.')) {
+      url.hostname = url.hostname.slice(4)
+      return Response.redirect(url.toString(), 301)
+    }
+    const { pathname } = url
     if (pathname === '/mcp' || pathname.startsWith('/mcp/')) {
       if (!(await allow(env.API_RL, `mcp:${clientKey(request)}`))) {
         return new Response('rate limit exceeded', { status: 429 })

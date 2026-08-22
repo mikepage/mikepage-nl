@@ -17,6 +17,9 @@ export const Layout = (props: { title: string; children: Child }) => (
         href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Space+Grotesk:wght@400;500;700&display=swap"
       />
       <link rel="stylesheet" href="/styles.css" />
+      <link rel="alternate" type="text/plain" href="/llms.txt" />
+      <link rel="service-desc" type="application/json" href="/openapi.json" />
+      <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />
     </head>
     <body>
       <div class="stars"></div>
@@ -41,7 +44,8 @@ export const Layout = (props: { title: string; children: Child }) => (
         <footer class="mt-24 border-t border-line pt-6 text-[0.95rem] text-muted">
           Built after dark by Mike Page, resident night owl 🦉 —{' '}
           <a href="https://github.com/mikepage">GitHub</a> ·{' '}
-          <a href="https://github.com/mikepage/mikepage-nl">source for this site</a>
+          <a href="https://github.com/mikepage/mikepage-nl">source for this site</a> ·{' '}
+          <a href="https://isitagentready.com/mikepage.nl">agent-readiness</a>
         </footer>
       </div>
     </body>
