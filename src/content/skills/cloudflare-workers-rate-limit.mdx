@@ -1,0 +1,35 @@
+---
+description: Guard a Cloudflare Worker endpoint with the native per-key rate-limit binding. Use when protecting an authless API or MCP endpoint, configuring ratelimits in wrangler, or returning 429s.
+post: rate-limit-binding
+postTitle: A tiny rate limiter with the Workers binding
+order: 3
+---
+
+# Cloudflare Workers Rate Limit
+
+Add per-key rate limiting with the built-in binding — a namespace plus one call.
+
+## Configure
+
+In `wrangler.jsonc` (`period` must be 10 or 60 seconds):
+
+```jsonc
+"ratelimits": [
+  { "name": "API_RL", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } }
+]
+```
+
+Run `wrangler types` and the binding appears as `API_RL: RateLimit`.
+
+## Use
+
+```ts
+const key = request.headers.get('cf-connecting-ip') ?? 'local'
+const { success } = await env.API_RL.limit({ key })
+if (!success) return new Response('rate limit exceeded', { status: 429 })
+```
+
+## Notes
+- Key by client IP, user id, or route — whatever bounds abuse.
+- No binding locally? Guard for `undefined` and treat as allowed so `wrangler dev` never limits you.
+- It is best-effort and approximate across the edge — good for shrugging off abuse, not for billing.

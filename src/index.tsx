@@ -2,7 +2,7 @@ import { Hono } from 'hono'
 import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
-import { skills } from './skills'
+import { skills, findSkill, skillMd } from './skills'
 import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard, agentSkills, a2aCard, aiCatalog, protectedResource } from './lib/catalog'
 import { negotiate } from './lib/negotiate'
 import { allow, clientKey } from './lib/rate-limit'
@@ -137,11 +137,27 @@ app.get('/posts/:file', (c) => {
   const post = findPost(id)
   if (!post) return c.notFound()
   if (format === 'markdown') return c.text(post.markdown, 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
+  const related = skills.filter((s) => s.post === post.slug)
   return c.html(
     <Layout title={`${post.title} — mikepage.nl`}>
       <article>
         <h1>{post.title}</h1>
         <time datetime={post.date}>{post.date}</time>
+        {related.length > 0 && (
+          <aside class="notice">
+            <strong>📦 Skill{related.length > 1 ? 's' : ''}</strong> — this post ships as{' '}
+            {related.length > 1 ? 'installable Claude Code skills' : 'an installable Claude Code skill'}:{' '}
+            {related.map((s, i) => (
+              <>
+                {i > 0 && ', '}
+                <a href={`/skills#${s.id}`}>
+                  <code>{s.id}</code>
+                </a>
+              </>
+            ))}
+            .
+          </aside>
+        )}
         <post.Body />
       </article>
     </Layout>
@@ -174,31 +190,41 @@ app.get('/skills', (c) =>
     <Layout title="Skills — mikepage.nl">
       <h1>Skills</h1>
       <p class="lede">
-        Copy-pasteable recipes for making a site agent-friendly — the real building blocks this
-        Worker runs on. No dependencies to clone; just the snippet.
+        Installable Claude Code skills distilled from the posts. Each is a <code>SKILL.md</code> —
+        drop it in <code>.claude/skills/&lt;name&gt;/SKILL.md</code> and your agent picks it up.
       </p>
       {skills.map((skill) => (
         <div class="skill" id={skill.id}>
           <div class="skill-head">
-            <h2>{skill.title}</h2>
+            <h2>{skill.id}</h2>
             <button type="button" class="copy" data-copy>
-              Copy
+              Copy SKILL.md
             </button>
           </div>
           <p>{skill.description}</p>
+          <p class="meta">
+            From: <a href={`/posts/${skill.post}`}>{skill.postTitle}</a> · Raw:{' '}
+            <a href={`/skills/${skill.id}`}>/skills/{skill.id}</a>
+          </p>
           <pre>
-            <code>{skill.code}</code>
+            <code>{skillMd(skill)}</code>
           </pre>
         </div>
       ))}
       <script
         dangerouslySetInnerHTML={{
-          __html: `document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var c=b.closest('.skill').querySelector('pre code').innerText;navigator.clipboard.writeText(c).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1500)})})})`,
+          __html: `document.querySelectorAll('[data-copy]').forEach(function(b){b.addEventListener('click',function(){var c=b.closest('.skill').querySelector('pre code').innerText;navigator.clipboard.writeText(c).then(function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy SKILL.md'},1500)})})})`,
         }}
       />
     </Layout>
   )
 )
+
+app.get('/skills/:id', (c) => {
+  const skill = findSkill(c.req.param('id').replace(/\.md$/, ''))
+  if (!skill) return c.notFound()
+  return c.text(skillMd(skill), 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
+})
 
 for (const tool of tools) {
   const engine = tool.engine

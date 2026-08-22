@@ -1,0 +1,45 @@
+---
+description: Make a website legible to AI agents with llms.txt, markdown content negotiation, Link headers, robots.txt AI rules, and well-known discovery cards. Use when adding agent discoverability or an OpenAPI/MCP catalog to a site.
+post: agent-friendly-mcp
+postTitle: Giving the tools an MCP server
+order: 4
+---
+
+# Agent-Friendly Site
+
+Expose the same content to agents that humans see. Add these, generated from one registry so docs never drift.
+
+## llms.txt (the map agents read first)
+
+```ts
+app.get('/llms.txt', (c) => {
+  const o = new URL(c.req.url).origin
+  return c.text(`# ${SITE}\n\n> ${TAGLINE}\n\n## Pages\n` +
+    pages.map((p) => `- [${p.title}](${o}${p.path}): ${p.summary}`).join('\n'))
+})
+```
+
+## Markdown content negotiation
+
+Serve markdown when `Accept: text/markdown` (or a `.md` suffix); HTML otherwise.
+
+## Link headers
+
+On every response, advertise machine resources:
+
+```ts
+c.res.headers.append('Link', `<${o}/llms.txt>; rel="alternate"; type="text/plain"`)
+c.res.headers.append('Link', `<${o}/openapi.json>; rel="service-desc"`)
+```
+
+## robots.txt
+
+Explicitly allow AI bots (GPTBot, ClaudeBot, PerplexityBot, …) and add a `Content-Signal:` line and a `Sitemap:`.
+
+## well-known discovery
+
+Serve `/.well-known/mcp.json` (MCP endpoint + tools), `/.well-known/api-catalog` (RFC 9727 to your OpenAPI), and `/sitemap.xml`.
+
+## Notes
+- Generate llms.txt, OpenAPI, sitemap, and the cards from the same page/tool registry.
+- Test with a real scanner (e.g. isitagentready.com) and read its API results to match each schema exactly.

@@ -1,0 +1,48 @@
+---
+description: Scaffold, run, and deploy a Hono web app on Cloudflare Workers with server-side JSX and no bundler. Use when starting a new Worker, wiring wrangler.jsonc, or serving HTML/JSON from the edge.
+post: cloudflare-setup
+postTitle: Setting up Claude Code for Cloudflare
+order: 1
+---
+
+# Cloudflare Hono Worker
+
+Build and ship a Hono app on Cloudflare Workers. Hono gives you routing plus `hono/jsx` for server-side HTML, so there is no client framework and no bundler config.
+
+## Scaffold
+
+```sh
+npm create hono@latest my-site   # pick the "cloudflare-workers" template
+cd my-site && npm install
+```
+
+## Enable JSX
+
+In `tsconfig.json`:
+
+```json
+{ "compilerOptions": { "jsx": "react-jsx", "jsxImportSource": "hono/jsx" } }
+```
+
+Files using JSX must be `.tsx`.
+
+## Minimal app
+
+```tsx
+import { Hono } from 'hono'
+const app = new Hono()
+app.get('/', (c) => c.html(<h1>Hello from the edge</h1>))
+export default app
+```
+
+## Run and deploy
+
+```sh
+npm run dev       # wrangler dev
+npm run deploy    # wrangler deploy
+```
+
+## Notes
+- Keep handlers inline in route definitions for path-param type inference.
+- Use `app.route('/section', subApp)` to split large apps by feature.
+- Read bindings from `c.env`; never reach for module-level singletons.

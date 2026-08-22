@@ -1,0 +1,55 @@
+---
+description: Add an authless remote MCP server to a Cloudflare Worker using McpAgent, exposing read-only tools over Streamable HTTP. Use when turning existing functions into MCP tools, wiring the Durable Object, or registering tools from a schema.
+post: agent-friendly-mcp
+postTitle: Giving the tools an MCP server
+order: 2
+---
+
+# Cloudflare Authless MCP Server
+
+Expose read-only tools over MCP on a Worker. Safe to run authless when the tools take no secrets and only read public data.
+
+## Install
+
+```sh
+npm install agents @modelcontextprotocol/sdk zod
+```
+
+## Configure the Durable Object
+
+`McpAgent` is DO-backed for session/transport. In `wrangler.jsonc`:
+
+```jsonc
+"durable_objects": { "bindings": [{ "name": "MYMCP", "class_name": "ToolsMcp" }] },
+"migrations": [{ "tag": "v1", "new_sqlite_classes": ["ToolsMcp"] }],
+"compatibility_flags": ["nodejs_compat"]
+```
+
+## Implement and serve
+
+```ts
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { McpAgent } from 'agents/mcp'
+import { z } from 'zod'
+
+export class ToolsMcp extends McpAgent {
+  server = new McpServer({ name: 'my-tools', version: '1.0.0' })
+  async init() {
+    this.server.registerTool(
+      'dns_lookup',
+      { description: 'Look up a DNS record', inputSchema: { name: z.string() } },
+      async ({ name }) => ({ content: [{ type: 'text', text: await lookup(name) }] })
+    )
+  }
+}
+
+const mcp = ToolsMcp.serve('/mcp', { binding: 'MYMCP' })
+```
+
+## Verify
+- `npx @modelcontextprotocol/inspector@latest` and point it at `/mcp`.
+- Or POST a JSON-RPC `initialize` and read the SSE `data:` line.
+
+## Notes
+- No application state needed — omit `initialState`; the DO only holds the transport session.
+- Keep one source of truth: register each tool from the same validate+run function your HTTP handlers use.
