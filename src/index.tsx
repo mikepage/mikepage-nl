@@ -3,6 +3,7 @@ import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
 import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard } from './lib/catalog'
+import { negotiate } from './lib/negotiate'
 import { allow, clientKey } from './lib/rate-limit'
 import { ToolsMcp } from './mcp'
 import css from './styles.generated.css'
@@ -69,12 +70,11 @@ app.get('/', (c) =>
   )
 )
 
-app.get('/posts/:slug', (c) => {
-  const raw = c.req.param('slug')
-  const wantsMd = raw.endsWith('.md') || (c.req.header('accept') ?? '').includes('text/markdown')
-  const post = findPost(raw.replace(/\.md$/, ''))
+app.get('/posts/:file', (c) => {
+  const { id, format } = negotiate(c.req.param('file'), c.req.header('accept'))
+  const post = findPost(id)
   if (!post) return c.notFound()
-  if (wantsMd) return c.text(post.markdown, 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
+  if (format === 'markdown') return c.text(post.markdown, 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
   return c.html(
     <Layout title={`${post.title} — mikepage.nl`}>
       <article>
