@@ -14,10 +14,11 @@ app.get('/styles.css', (c) =>
 app.get('/', (c) =>
   c.html(
     <Layout title="mikepage.nl — Building on the Cloudflare Developer Platform">
-      <h1>Fun with the Cloudflare Developer Platform</h1>
+      <h1>Night-owl experiments on the edge</h1>
       <p class="lede">
-        Hands-on examples for Workers, Durable Objects, D1, R2 and friends — every post ships
-        with working code, and demos run live on this very Worker.
+        Learning the Cloudflare Developer Platform after dark — fun, hands-on examples for
+        Workers, Durable Objects, D1, R2 and friends. Every post ships with working code, and the
+        demos run live on this very Worker.
       </p>
       <ul class="posts">
         {posts.map((post) => (
