@@ -95,7 +95,7 @@ router.get('/', async (c) => {
           ))}
         {name && !error && (
           <p class="meta">
-            JSON: <a href={`/tools/dns-lookup/api?name=${name}&type=${type}`}>/tools/dns-lookup/api?name={name}&type={type}</a>
+            JSON: <a href={`/experiments/dns-lookup/api?name=${name}&type=${type}`}>/experiments/dns-lookup/api?name={name}&type={type}</a>
           </p>
         )}
       </ToolShell>

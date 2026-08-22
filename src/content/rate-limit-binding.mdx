@@ -5,7 +5,7 @@ order: 3
 summary: The authless MCP server and JSON APIs needed a guardrail. Cloudflare's rate-limiting binding is about six lines — config plus one call.
 ---
 
-Once the [tools](/tools) were [authless over MCP](/posts/agent-friendly-mcp), anyone could call them — and `dns_discovery` fans out ~50 subrequests per call. That wants a guardrail. Cloudflare has a rate-limiting binding built in, and it's about as small as it gets.
+Once the [experiments](/experiments) were [authless over MCP](/posts/agent-friendly-mcp), anyone could call them — and `dns_discovery` fans out ~50 subrequests per call. That wants a guardrail. Cloudflare has a rate-limiting binding built in, and it's about as small as it gets.
 
 ## Configure it
 

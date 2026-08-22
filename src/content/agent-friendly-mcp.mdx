@@ -5,7 +5,7 @@ order: 2
 summary: One engine per tool, reused by the HTML page, a JSON API, and an authless MCP server on a Durable Object.
 ---
 
-The [tools](/tools) on this site already ran on the edge and rendered results as shareable URLs. The next question was: how do you let an *agent* use them — not just a human with a browser? This post is how I made the whole site agent-friendly and put the tools behind an authless MCP server, all on the same Worker.
+The [experiments](/experiments) on this site already ran on the edge and rendered results as shareable URLs. The next question was: how do you let an *agent* use them — not just a human with a browser? This post is how I made the whole site agent-friendly and put the experiments behind an authless MCP server, all on the same Worker.
 
 ## One engine per tool
 
@@ -30,7 +30,7 @@ Four things make the site legible to an agent that arrives cold:
 <ul class="checks">
   <li class="ok"><a href="/llms.txt">/llms.txt</a> — the map agents look for first: what the site is, the posts, and every tool with its JSON endpoint and MCP tool name.</li>
   <li class="ok"><a href="/openapi.json">/openapi.json</a> — generated from the same engine schemas, so the docs can never drift from the code.</li>
-  <li class="ok">A JSON API on every tool — append <code>/api</code> to any tool URL, e.g. <code>/tools/dns-lookup/api?name=example.com</code>.</li>
+  <li class="ok">A JSON API on every experiment — append <code>/api</code> to any experiment URL, e.g. <code>/experiments/dns-lookup/api?name=example.com</code>.</li>
   <li class="ok"><code>/robots.txt</code> and <code>/sitemap.xml</code>, both built from the live registry.</li>
 </ul>
 
@@ -61,4 +61,4 @@ One entry point splits traffic: `/mcp` goes to the agent, everything else to the
 
 ## Try it
 
-Add `https://mikepage.nl/mcp` as a remote MCP server in your client of choice, or just hit a JSON endpoint: [/tools/dns-lookup/api?name=cloudflare.com](/tools/dns-lookup/api?name=cloudflare.com). Same engine, three front doors.
+Add `https://mikepage.nl/mcp` as a remote MCP server in your client of choice, or just hit a JSON endpoint: [/experiments/dns-lookup/api?name=cloudflare.com](/experiments/dns-lookup/api?name=cloudflare.com). Same engine, three front doors.

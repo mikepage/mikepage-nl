@@ -15,8 +15,8 @@ describe('pages', () => {
     expect(res.headers.get('content-type')).toContain('text/markdown')
   })
 
-  it('serves tools and skills indexes', async () => {
-    expect((await SELF.fetch(`${H}/tools`)).status).toBe(200)
+  it('serves experiments and skills indexes', async () => {
+    expect((await SELF.fetch(`${H}/experiments`)).status).toBe(200)
     expect((await SELF.fetch(`${H}/skills`)).status).toBe(200)
   })
 
@@ -64,7 +64,7 @@ describe('skills', () => {
 
 describe('tool JSON API', () => {
   it('rejects invalid input with 400', async () => {
-    const res = await SELF.fetch(`${H}/tools/dns-lookup/api?name=notadomain`)
+    const res = await SELF.fetch(`${H}/experiments/dns-lookup/api?name=notadomain`)
     expect(res.status).toBe(400)
     expect(await res.json()).toMatchObject({ error: expect.any(String) })
   })
@@ -93,8 +93,8 @@ describe('agent-readiness surface', () => {
 
 describe('canonical host', () => {
   it('redirects www to the apex domain', async () => {
-    const res = await SELF.fetch('https://www.mikepage.nl/tools', { redirect: 'manual' })
+    const res = await SELF.fetch('https://www.mikepage.nl/experiments', { redirect: 'manual' })
     expect(res.status).toBe(301)
-    expect(res.headers.get('location')).toBe('https://mikepage.nl/tools')
+    expect(res.headers.get('location')).toBe('https://mikepage.nl/experiments')
   })
 })

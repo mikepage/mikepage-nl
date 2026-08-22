@@ -86,7 +86,7 @@ requests carry no \`access_token\`.
 Call the tools directly, with no \`Authorization\` header:
 
 - MCP: connect an MCP client to ${origin}/mcp
-- JSON: \`GET ${origin}/tools/<tool>/api\`
+- JSON: \`GET ${origin}/experiments/<tool>/api\`
 
 Access is anonymous and rate-limited per IP.
 
@@ -100,7 +100,7 @@ app.get('/AUTH.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdo
 app.get('/.well-known/auth.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
 app.get('/sitemap.xml', (c) => {
   const origin = new URL(c.req.url).origin
-  const urls = ['/', '/platform', '/tools', '/skills', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/tools/${t.slug}`)]
+  const urls = ['/', '/platform', '/experiments', '/skills', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/experiments/${t.slug}`)]
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
     .map((u) => `  <url><loc>${origin}${u}</loc></url>`)
     .join('\n')}\n</urlset>\n`
@@ -165,7 +165,7 @@ app.get('/posts/:file', (c) => {
   )
 })
 
-app.get('/tools', (c) =>
+app.get('/experiments', (c) =>
   c.html(
     <Layout title="Experiments — mikepage.nl">
       <h1>Experiments</h1>
@@ -176,7 +176,7 @@ app.get('/tools', (c) =>
       <ul class="posts">
         {tools.map((tool) => (
           <li>
-            <a href={`/tools/${tool.slug}`}>{tool.title}</a>
+            <a href={`/experiments/${tool.slug}`}>{tool.title}</a>
             <div class="meta">⚡ {tool.pattern}</div>
             <p class="summary">{tool.summary}</p>
           </li>
@@ -275,7 +275,7 @@ for (const tool of tools) {
       }
     })
   }
-  app.route(`/tools/${tool.slug}`, tool.router)
+  app.route(`/experiments/${tool.slug}`, tool.router)
 }
 
 for (const post of posts) {

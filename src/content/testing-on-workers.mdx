@@ -36,9 +36,9 @@ import { SELF } from 'cloudflare:test'
 import { it, expect } from 'vitest'
 
 it('redirects www to the apex domain', async () => {
-  const res = await SELF.fetch('https://www.mikepage.nl/tools', { redirect: 'manual' })
+  const res = await SELF.fetch('https://www.mikepage.nl/experiments', { redirect: 'manual' })
   expect(res.status).toBe(301)
-  expect(res.headers.get('location')).toBe('https://mikepage.nl/tools')
+  expect(res.headers.get('location')).toBe('https://mikepage.nl/experiments')
 })
 
 it('negotiates markdown', async () => {
@@ -56,4 +56,4 @@ Because this is real workerd, the MCP Durable Object spins up, the SMTP tool's `
 
 ## One gotcha
 
-Avoid real network calls in tests (the DNS tools hit DNS-over-HTTPS). Test the *validation and routing* paths instead — e.g. assert `/tools/dns-lookup/api?name=notadomain` returns 400 — and mock outbound fetches when you must, with `@msw/cloudflare`. Deterministic tests beat live lookups.
+Avoid real network calls in tests (the DNS experiments hit DNS-over-HTTPS). Test the *validation and routing* paths instead — e.g. assert `/experiments/dns-lookup/api?name=notadomain` returns 400 — and mock outbound fetches when you must, with `@msw/cloudflare`. Deterministic tests beat live lookups.

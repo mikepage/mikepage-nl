@@ -12,11 +12,11 @@ export function llmsTxt(origin: string): string {
   ]
   for (const post of posts) lines.push(`- [${post.title}](${origin}/posts/${post.slug}): ${post.summary}`)
 
-  lines.push('', '## Tools')
+  lines.push('', '## Experiments')
   for (const tool of tools) {
-    const api = tool.engine ? ` JSON API: ${origin}/tools/${tool.slug}/api` : ''
+    const api = tool.engine ? ` JSON API: ${origin}/experiments/${tool.slug}/api` : ''
     const mcp = tool.engine ? ` MCP tool: \`${tool.engine.name}\`.` : ''
-    lines.push(`- [${tool.title}](${origin}/tools/${tool.slug}): ${tool.summary}${api}${mcp}`)
+    lines.push(`- [${tool.title}](${origin}/experiments/${tool.slug}): ${tool.summary}${api}${mcp}`)
   }
 
   lines.push(
@@ -58,7 +58,7 @@ function engineTools(origin: string) {
       id: t.engine!.name,
       name: t.title,
       description: t.engine!.description,
-      endpoint: `${origin}/tools/${t.slug}/api`,
+      endpoint: `${origin}/experiments/${t.slug}/api`,
       inputSchema: t.engine!.inputSchema,
     }))
 }
@@ -177,7 +177,7 @@ export function openApi(origin: string): object {
     if (!engine) continue
     const props = (engine.inputSchema.properties ?? {}) as Record<string, { type?: string; description?: string; enum?: unknown[] }>
     const required = new Set((engine.inputSchema.required as string[]) ?? [])
-    paths[`/tools/${tool.slug}/api`] = {
+    paths[`/experiments/${tool.slug}/api`] = {
       get: {
         operationId: engine.name,
         summary: tool.title,
