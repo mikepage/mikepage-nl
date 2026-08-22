@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { connect } from 'cloudflare:sockets'
 import { Layout } from '../components/layout'
 import { ToolShell } from '../components/tool-shell'
+import { assertPublicHost } from '../lib/doh'
 import { isDomain } from '../lib/domain'
 import type { Tool } from './types'
 
@@ -63,7 +64,9 @@ router.get('/', async (c) => {
     else if (!(PORTS as readonly number[]).includes(port)) error = 'Port must be 587, 465, or 2525. (Port 25 is blocked from Workers — by design.)'
     else {
       try {
-        result = await probe(host, port)
+        // SSRF guard: only connect to hostnames that resolve to public addresses.
+        error = await assertPublicHost(host)
+        if (!error) result = await probe(host, port)
       } catch (e) {
         error = `Could not probe ${host}:${port} — ${e instanceof Error ? e.message : String(e)}`
       }
