@@ -36,7 +36,8 @@ for (const file of files) {
     await compile(body, { jsxImportSource: 'hono/jsx', outputFormat: 'program', development: false })
   )
   await writeFile(join(outDir, `${slug}.js`), compiled)
-  entries.push({ slug, meta })
+  const markdown = `# ${meta.title ?? slug}\n\n${body.trim()}\n`
+  entries.push({ slug, meta, markdown })
 }
 
 // Newest first by `order` (higher = newer)
@@ -48,7 +49,7 @@ const list = entries
     (e, i) =>
       `  { slug: ${JSON.stringify(e.slug)}, title: ${JSON.stringify(e.meta.title ?? e.slug)}, date: ${JSON.stringify(
         e.meta.date ?? ''
-      )}, summary: ${JSON.stringify(e.meta.summary ?? '')}, Body: Body${i} }`
+      )}, summary: ${JSON.stringify(e.meta.summary ?? '')}, markdown: ${JSON.stringify(e.markdown)}, Body: Body${i} }`
   )
   .join(',\n')
 

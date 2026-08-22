@@ -12,6 +12,12 @@
   "ratelimits": [
     { "name": "API_RL", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } }
   ]
+  // To serve on mikepage.nl: add the zone to this Cloudflare account, then uncomment.
+  // The scanner at isitagentready.com checks mikepage.nl, so this is the prerequisite.
+  // ,"routes": [
+  //   { "pattern": "mikepage.nl", "custom_domain": true },
+  //   { "pattern": "www.mikepage.nl", "custom_domain": true }
+  // ]
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],

@@ -2,12 +2,21 @@ import { Hono } from 'hono'
 import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
-import { llmsTxt, openApi } from './lib/catalog'
+import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard } from './lib/catalog'
 import { allow, clientKey } from './lib/rate-limit'
 import { ToolsMcp } from './mcp'
 import css from './styles.generated.css'
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
+
+// Advertise machine-readable resources on every response (RFC 8288 Link header).
+app.use('*', async (c, next) => {
+  await next()
+  const origin = new URL(c.req.url).origin
+  c.res.headers.append('Link', `<${origin}/llms.txt>; rel="alternate"; type="text/plain"`)
+  c.res.headers.append('Link', `<${origin}/openapi.json>; rel="service-desc"; type="application/json"`)
+  c.res.headers.append('Link', `<${origin}/.well-known/api-catalog>; rel="api-catalog"`)
+})
 
 app.get('/styles.css', (c) =>
   c.text(css, 200, { 'Content-Type': 'text/css; charset=utf-8' })
@@ -15,9 +24,19 @@ app.get('/styles.css', (c) =>
 
 // Agent-friendly discovery
 app.get('/llms.txt', (c) => c.text(llmsTxt(new URL(c.req.url).origin)))
+app.get('/llms-full.txt', (c) => c.text(llmsFull(new URL(c.req.url).origin)))
 app.get('/openapi.json', (c) => c.json(openApi(new URL(c.req.url).origin)))
-app.get('/robots.txt', (c) =>
-  c.text(`User-agent: *\nAllow: /\nSitemap: ${new URL(c.req.url).origin}/sitemap.xml\n`)
+app.get('/robots.txt', (c) => c.text(robotsTxt(new URL(c.req.url).origin)))
+app.get('/.well-known/api-catalog', (c) =>
+  c.json(apiCatalog(new URL(c.req.url).origin), 200, { 'Content-Type': 'application/linkset+json' })
+)
+app.get('/.well-known/mcp.json', (c) => c.json(mcpCard(new URL(c.req.url).origin)))
+app.get('/.well-known/auth.md', (c) =>
+  c.text(
+    `# Authentication\n\nThe tools API (\`/tools/*/api\`) and the MCP server (\`/mcp\`) are **authless** — no key, token, or OAuth required. They are read-only lookups over public data, rate-limited per IP.\n`,
+    200,
+    { 'Content-Type': 'text/markdown; charset=utf-8' }
+  )
 )
 app.get('/sitemap.xml', (c) => {
   const origin = new URL(c.req.url).origin
@@ -51,8 +70,11 @@ app.get('/', (c) =>
 )
 
 app.get('/posts/:slug', (c) => {
-  const post = findPost(c.req.param('slug'))
+  const raw = c.req.param('slug')
+  const wantsMd = raw.endsWith('.md') || (c.req.header('accept') ?? '').includes('text/markdown')
+  const post = findPost(raw.replace(/\.md$/, ''))
   if (!post) return c.notFound()
+  if (wantsMd) return c.text(post.markdown, 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
   return c.html(
     <Layout title={`${post.title} — mikepage.nl`}>
       <article>

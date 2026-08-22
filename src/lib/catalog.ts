@@ -29,6 +29,56 @@ export function llmsTxt(origin: string): string {
   return lines.join('\n')
 }
 
+/** llms-full.txt — the site map plus every post's full markdown, inline. */
+export function llmsFull(origin: string): string {
+  const parts = [llmsTxt(origin), '', '---', '']
+  for (const post of posts) parts.push(post.markdown, '', '---', '')
+  return parts.join('\n')
+}
+
+/** robots.txt with explicit AI-bot allowances and a Cloudflare content-signal. */
+export function robotsTxt(origin: string): string {
+  const aiBots = ['GPTBot', 'ChatGPT-User', 'OAI-SearchBot', 'ClaudeBot', 'anthropic-ai', 'Claude-User', 'PerplexityBot', 'Google-Extended', 'CCBot', 'Bytespider']
+  const lines = [
+    'User-agent: *',
+    'Content-Signal: search=yes, ai-input=yes, ai-train=no',
+    'Allow: /',
+    '',
+    '# Read-only public tools — AI agents welcome to read and query.',
+  ]
+  for (const bot of aiBots) lines.push(`User-agent: ${bot}`, 'Allow: /', '')
+  lines.push(`Sitemap: ${origin}/sitemap.xml`, '')
+  return lines.join('\n')
+}
+
+/** RFC 9727 API catalog (application/linkset+json) pointing at the OpenAPI doc. */
+export function apiCatalog(origin: string): object {
+  return {
+    linkset: [
+      {
+        anchor: origin,
+        'service-desc': [{ href: `${origin}/openapi.json`, type: 'application/json' }],
+        'service-doc': [{ href: `${origin}/llms.txt`, type: 'text/plain' }],
+      },
+    ],
+  }
+}
+
+/** MCP server discovery card. */
+export function mcpCard(origin: string): object {
+  return {
+    name: 'mikepage-tools',
+    version: '1.0.0',
+    description: 'Read-only edge tools for DNS, email authentication, and domain data.',
+    endpoint: `${origin}/mcp`,
+    transport: 'streamable-http',
+    authentication: 'none',
+    tools: tools
+      .filter((t) => t.engine)
+      .map((t) => ({ name: t.engine!.name, description: t.engine!.description })),
+  }
+}
+
 /** Minimal OpenAPI 3.1 doc for the tools' JSON endpoints. */
 export function openApi(origin: string): object {
   const paths: Record<string, unknown> = {}
