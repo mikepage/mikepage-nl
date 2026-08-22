@@ -66,13 +66,35 @@ One shared `Layout` component (`src/components/layout.tsx`):
 - No database, KV, analytics, or comments — add a binding only when a post's demo needs it
 - No RSS/sitemap yet (easy to add later as Hono routes)
 
+## Tools
+
+Alongside posts, the site hosts interactive tools (the utilities migrating from Deno Deploy). A tool is a self-contained module in `src/tools/<slug>.tsx` exporting `{ slug, title, summary, pattern, router }` — its own Hono router rendering a form page at `GET /` (results server-rendered from query params, so every result has a shareable URL) and optionally a JSON API under `/api`. The registry `src/tools/index.ts` lists them; the composition root mounts each at `/tools/<slug>`.
+
+Shared plumbing lives in `src/lib/` (named by domain noun): `doh.ts` (DNS-over-HTTPS queries), `domain.ts` (input validation).
+
+### Cloudflare patterns the tools demonstrate
+
+Each tool is also an example of one platform pattern — that's the site's angle:
+
+| Tool | Pattern |
+|---|---|
+| dns-lookup, dmarc-validator, spf-validator | **Stateless fetch-out**: query public APIs (Cloudflare DNS-over-HTTPS) from the edge, no state |
+| dns-discovery | **Fetch-out fan-out**: ~50 concurrent DoH probes per request, gathered with Promise.all (dnsspy-style initial scan, discovery not monitoring) |
+| rdap-lookup | **Fetch-out with redirects**: rdap.org bootstrap redirecting to the registry's RDAP server |
+| ipv6-utils | **Pure compute at the edge**: BigInt math, zero I/O |
+| browserinfo | **Request introspection**: the `request.cf` object Cloudflare attaches to every request (colo, geo, ASN, TLS) |
+| smtp-submission-test | **Raw TCP from a Worker**: `cloudflare:sockets` `connect()` — port 25 is blocked, submission ports 587/465 work |
+| dns-monitor (planned) | **Stateful scheduled Worker**: cron trigger + D1 for history + email on change |
+
 ## Migration backlog: Deno Deploy projects
 
 Existing utilities on Deno Deploy to migrate to this Worker as posts with live demos (removed from the GitHub profile README on 2026-08-22):
 
-- Email & DNS: https://dmarc-validator.mikepage.deno.net · https://dns-lookup.mikepage.deno.net · https://dns-monitor.mikepage.deno.net · https://smtp-submission-test.mikepage.deno.net · https://spf-validator.mikepage.deno.net · https://rdap-lookup.mikepage.deno.net
-- Network: https://ipv6-utils.mikepage.deno.net
-- Web utilities: https://browserinfo.mikepage.deno.net
+Status: all migrated as of 2026-08-22 (dns-monitor became `dns-discovery` — the Deno version was a discovery scan, not a monitor).
+
+- Email & DNS: https://dmarc-validator.mikepage.deno.net ✅ · https://dns-lookup.mikepage.deno.net ✅ · https://dns-monitor.mikepage.deno.net ✅ (→ dns-discovery) · https://smtp-submission-test.mikepage.deno.net ✅ · https://spf-validator.mikepage.deno.net ✅ · https://rdap-lookup.mikepage.deno.net ✅
+- Network: https://ipv6-utils.mikepage.deno.net ✅
+- Web utilities: https://browserinfo.mikepage.deno.net ✅
 
 ## Milestones
 

@@ -28,6 +28,10 @@ export const Layout = (props: { title: string; children: Child }) => (
             mikepage.nl
           </a>
           <span class="tagline">Building on the Cloudflare Developer Platform</span>
+          <nav>
+            <a href="/">Posts</a>
+            <a href="/tools">Tools</a>
+          </nav>
         </header>
         <main>{props.children}</main>
         <footer class="site">

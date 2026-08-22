@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
+import { tools } from './tools'
 import { css } from './styles'
 
 const app = new Hono()
@@ -43,6 +44,31 @@ app.get('/posts/:slug', (c) => {
     </Layout>
   )
 })
+
+app.get('/tools', (c) =>
+  c.html(
+    <Layout title="Tools — mikepage.nl">
+      <h1>Tools</h1>
+      <p class="lede">
+        Small network and email utilities, each one a live example of a Cloudflare Workers pattern — running on this very
+        Worker.
+      </p>
+      <ul class="posts">
+        {tools.map((tool) => (
+          <li>
+            <a href={`/tools/${tool.slug}`}>{tool.title}</a>
+            <div class="meta">⚡ {tool.pattern}</div>
+            <p class="summary">{tool.summary}</p>
+          </li>
+        ))}
+      </ul>
+    </Layout>
+  )
+)
+
+for (const tool of tools) {
+  app.route(`/tools/${tool.slug}`, tool.router)
+}
 
 for (const post of posts) {
   if (post.demo) app.route(`/demos/${post.slug}`, post.demo)

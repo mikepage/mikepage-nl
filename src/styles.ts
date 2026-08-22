@@ -154,6 +154,85 @@ p code, li code {
   font-size: 0.85em;
 }
 
+header.site nav {
+  margin-left: auto;
+  display: flex;
+  gap: 1.25rem;
+}
+header.site nav a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+header.site nav a:hover { color: var(--accent-soft); }
+
+.pattern { color: var(--accent-soft); font-size: 0.9rem; }
+
+form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 2rem 0;
+}
+input[type="text"] {
+  flex: 1 1 16rem;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--fg);
+  font: inherit;
+  padding: 0.6rem 0.9rem;
+}
+input[type="text"]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+select {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--fg);
+  font: inherit;
+  padding: 0.6rem 0.75rem;
+}
+button {
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  color: #14100a;
+  font: inherit;
+  font-weight: 600;
+  padding: 0.6rem 1.4rem;
+  cursor: pointer;
+}
+button:hover { background: var(--accent-soft); }
+
+.ok { color: #6fdc8c; }
+.warn { color: #ffd166; }
+.err { color: #ff7b72; }
+ul.checks { list-style: none; padding: 0; }
+ul.checks li { padding: 0.3rem 0; }
+ul.checks li::before { margin-right: 0.5rem; }
+ul.checks li.ok::before { content: "✓"; }
+ul.checks li.warn::before { content: "△"; }
+ul.checks li.err::before { content: "✕"; }
+ul.checks li.plain::before { content: "·"; }
+
+dl.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  margin: 1.75rem 0;
+}
+dl.facts dt { color: var(--muted); }
+dl.facts dd { margin: 0; overflow-wrap: anywhere; }
+
+table { border-collapse: collapse; width: 100%; margin: 1.75rem 0; }
+th, td { text-align: left; padding: 0.5rem 0.9rem; border-bottom: 1px solid var(--border); }
+th { color: var(--muted); font-weight: 500; }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em; }
+
 footer.site {
   margin-top: 6rem;
   padding-top: 1.5rem;
