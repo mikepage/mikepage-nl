@@ -1,0 +1,42 @@
+---
+title: Making a site agent-ready — llms.txt, well-known cards, and a scanner
+date: 2026-08-23
+order: 5
+summary: The discovery layer that makes a site legible to agents — llms.txt, markdown content negotiation, Link headers, robots signals, and well-known cards — and what a real agent-readiness scanner actually checks.
+---
+
+Giving the tools [an MCP server](/posts/agent-friendly-mcp) made them *callable*. This post is the other half: making the whole site *discoverable* — so an agent that arrives cold can find its way around without a human.
+
+## The four foundations
+
+Most of the value is plumbing, generated from one registry so it can never drift from the code:
+
+- **`/llms.txt`** — the map agents look for first: what the site is, its pages, and each tool with its JSON endpoint and MCP name. There's a `/llms-full.txt` too that inlines every post.
+- **Markdown content negotiation** — send `Accept: text/markdown` (or add `.md`) to any post and get raw markdown instead of HTML. The home page answers markdown too.
+- **`Link` headers** — every response advertises `llms.txt`, the OpenAPI doc, and the API catalog via RFC 8288 `rel` links.
+- **`robots.txt`** — explicit `Allow` rules for GPTBot, ClaudeBot, PerplexityBot and friends, plus a Cloudflare `Content-Signal:` line and a `Sitemap:`.
+
+## well-known discovery cards
+
+Beyond the basics, agents look under `/.well-known/`:
+
+- `mcp.json` — the MCP server card (endpoint, transport, tool list)
+- `api-catalog` — RFC 9727 linkset pointing at the OpenAPI
+- `agent-skills/index.json` and `agent-card.json` — Agent Skills and A2A discovery
+- `ai-catalog.json` — an ARD capability manifest, also linked from `robots.txt` as `Agentmap:` and from the page `<head>`
+
+Everything above is built from the same list of posts and tools, so adding one updates all of them.
+
+## What a scanner actually checks
+
+I pointed [isitagentready.com](https://isitagentready.com/mikepage.nl) at the site and worked its findings. It has a public JSON API — POST a URL to `/api/scan` — which was far more useful than the UI, because each check returns the exact request it made and the exact field it wanted. That turned guesswork into a checklist: the A2A card needed a `supportedInterfaces` field, the ARD manifest needed `entries` with `identifier`/`displayName`, the auth doc needed a specific heading. Read the machine output, not the score.
+
+The site reached the top tier, **Agent-Native**. The checks it doesn't pass are honest gaps, not oversights:
+
+- **OAuth discovery / protected-resource / auth.md** — these want a real OAuth authorization server. The tools are deliberately **authless**; faking an OAuth server would mislead real MCP clients into a flow that doesn't exist.
+- **DNS-AID** — needs DNS records, not something the Worker can serve.
+- **WebMCP** — a client-side, in-browser tool protocol; experimental, and a separate build.
+
+## The lesson
+
+Agent-readiness isn't one feature — it's a dozen small, machine-readable surfaces, each cheap on its own. Generate them from a single source of truth and they stay correct for free. Chase a scanner's *green*, but only where it reflects something true about your site.

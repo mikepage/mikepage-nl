@@ -189,7 +189,7 @@ app.get('/skills', (c) =>
   c.html(
     <Layout title="Skills — mikepage.nl">
       <h1>Skills</h1>
-      <p class="lede">
+      <p class="lede mb-10">
         Installable Claude Code skills distilled from the posts. Each is a <code>SKILL.md</code> —
         drop it in <code>.claude/skills/&lt;name&gt;/SKILL.md</code> and your agent picks it up.
       </p>
