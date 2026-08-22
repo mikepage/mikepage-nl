@@ -131,6 +131,25 @@
   }
   .facts dt { @apply text-muted; }
   .facts dd { margin: 0; overflow-wrap: anywhere; }
+
+  /* Nested SPF include tree — left guide line per level (the ├─ connectors are the edge case, kept raw) */
+  .tree, .tree ul { @apply list-none; }
+  .tree { padding: 0; margin: 1rem 0; }
+  .tree ul { margin: 0; padding-left: 1.25rem; border-left: 1px solid var(--color-line); }
+  .tree li { position: relative; padding: 0.2rem 0 0.2rem 1rem; }
+  .tree li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.95rem;
+    width: 0.75rem;
+    height: 1px;
+    background: var(--color-line);
+  }
+  .tree > li { padding-left: 0; }
+  .tree > li::before { display: none; }
+  .tree-via { @apply text-muted; margin-right: 0.35rem; font-size: 0.8rem; }
+  .tree-label { line-height: 1.9; }
 }
 
 /* Edge case: fixed star field with per-layer twinkle keyframes — pure CSS */
