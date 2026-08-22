@@ -1,6 +1,9 @@
 # prod
 dist/
 
+# generated (built by npm run build:css)
+src/styles.generated.css
+
 # dev
 .yarn/
 !.yarn/releases

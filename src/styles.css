@@ -1,0 +1,180 @@
+@import "tailwindcss";
+
+/* Starry-night theme tokens — exposed as Tailwind utilities (bg-night, text-ink, border-line, font-display, …) */
+@theme {
+  --color-night: #070d1f;
+  --color-void: #030614;
+  --color-ink: #e8ecf8;
+  --color-muted: #8b96b8;
+  --color-accent: #f6821f;
+  --color-glow: #ffb066;
+  --color-line: #1d2a4d;
+  --color-code: #0d1530;
+  --color-card: #0a1129;
+  --color-ok: #6fdc8c;
+  --color-warn: #ffd166;
+  --color-err: #ff7b72;
+
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Space Grotesk", system-ui, sans-serif;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+
+  /* Edge case: 3-stop night-sky gradient stays raw CSS */
+  body {
+    @apply text-ink;
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.8;
+    min-height: 100vh;
+    position: relative;
+    background: linear-gradient(180deg, var(--color-void) 0%, var(--color-night) 40%, #0a1433 100%);
+  }
+
+  a {
+    color: var(--color-glow);
+    text-decoration-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  }
+  a:hover { color: var(--color-accent); }
+
+  h1 {
+    @apply font-display;
+    font-weight: 550;
+    font-size: 2.6rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0 0 1.5rem;
+  }
+  h2 {
+    @apply font-display;
+    font-weight: 550;
+    font-size: 1.5rem;
+    margin-top: 3rem;
+    margin-bottom: 0.75rem;
+  }
+
+  pre {
+    @apply bg-code border border-line rounded-xl overflow-x-auto my-7;
+    padding: 1.25rem 1.4rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  :is(p, li) code {
+    @apply bg-code border border-line rounded;
+    padding: 0.1em 0.4em;
+    font-size: 0.85em;
+  }
+
+  /* Form controls, site-wide */
+  form { @apply flex flex-wrap gap-3 my-8; }
+  input[type="text"],
+  select {
+    @apply bg-code border border-line text-ink;
+    border-radius: 10px;
+    font: inherit;
+    padding: 0.6rem 0.9rem;
+  }
+  input[type="text"] { flex: 1 1 16rem; }
+  input[type="text"]:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+  button {
+    @apply bg-accent font-semibold;
+    color: #14100a;
+    border: none;
+    border-radius: 10px;
+    padding: 0.6rem 1.4rem;
+    cursor: pointer;
+  }
+  button:hover { background: var(--color-glow); }
+
+  table { @apply w-full my-7; border-collapse: collapse; }
+  th, td {
+    @apply text-left;
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+  th { @apply text-muted; font-weight: 500; }
+}
+
+@layer components {
+  .lede { @apply text-muted; font-size: 1.15rem; max-width: 38rem; }
+  .pattern { @apply text-glow; font-size: 0.9rem; }
+  .meta { @apply text-muted; font-size: 0.85rem; margin-top: 0.35rem; }
+  .summary { @apply text-ink; margin: 0.6rem 0 0; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em; }
+
+  .posts { @apply list-none p-0; margin-top: 3.5rem; }
+  .posts li { @apply mb-8 rounded-2xl border border-line bg-card; padding: 1.5rem 1.75rem; }
+  .posts a { @apply font-display no-underline; font-weight: 550; font-size: 1.35rem; }
+
+  article time { @apply text-muted block; font-size: 0.95rem; margin-bottom: 2.5rem; }
+  article p { margin: 1.25rem 0; }
+
+  /* Check lists — colors are utilities, the ::before markers are the edge case (kept raw) */
+  .checks { @apply list-none p-0; }
+  .checks li { padding: 0.3rem 0; }
+  .checks li::before { margin-right: 0.5rem; }
+  .checks li.ok::before { content: "✓"; }
+  .checks li.warn::before { content: "△"; }
+  .checks li.err::before { content: "✕"; }
+  .checks li.plain::before { content: "·"; }
+  .ok { color: var(--color-ok); }
+  .warn { color: var(--color-warn); }
+  .err { color: var(--color-err); }
+
+  .facts {
+    @apply grid gap-x-6 gap-y-2 rounded-xl border border-line bg-card my-7;
+    grid-template-columns: max-content 1fr;
+    padding: 1.25rem 1.5rem;
+  }
+  .facts dt { @apply text-muted; }
+  .facts dd { margin: 0; overflow-wrap: anywhere; }
+}
+
+/* Edge case: fixed star field with per-layer twinkle keyframes — pure CSS */
+.stars, .stars2, .stars3 {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.stars {
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 28% 64%, #dbe4ff 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 41% 32%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 57% 78%, #c9d6ff 50%, transparent 50%),
+    radial-gradient(1px 1px at 66% 12%, #fff 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 79% 49%, #eef2ff 50%, transparent 50%),
+    radial-gradient(1px 1px at 88% 84%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 95% 27%, #dbe4ff 50%, transparent 50%);
+  animation: twinkle 5s ease-in-out infinite alternate;
+}
+.stars2 {
+  background-image:
+    radial-gradient(1px 1px at 7% 82%, #fff 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 19% 41%, #ffd9ad 50%, transparent 50%),
+    radial-gradient(1px 1px at 35% 91%, #fff 50%, transparent 50%),
+    radial-gradient(1px 1px at 49% 8%, #c9d6ff 50%, transparent 50%),
+    radial-gradient(1px 1px at 62% 56%, #fff 50%, transparent 50%),
+    radial-gradient(1.5px 1.5px at 74% 23%, #eef2ff 50%, transparent 50%),
+    radial-gradient(1px 1px at 83% 67%, #ffd9ad 50%, transparent 50%),
+    radial-gradient(1px 1px at 93% 95%, #fff 50%, transparent 50%);
+  animation: twinkle 7s ease-in-out infinite alternate-reverse;
+}
+.stars3 {
+  background-image:
+    radial-gradient(2px 2px at 23% 15%, rgba(255,255,255,.9) 50%, transparent 50%),
+    radial-gradient(2px 2px at 71% 76%, rgba(255,214,170,.9) 50%, transparent 50%),
+    radial-gradient(2px 2px at 52% 44%, rgba(219,228,255,.9) 50%, transparent 50%);
+  animation: twinkle 9s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stars, .stars2, .stars3 { animation: none; }
+}

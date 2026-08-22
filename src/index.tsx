@@ -2,7 +2,8 @@ import { Hono } from 'hono'
 import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
-import { css } from './styles'
+// @ts-expect-error text module — bundled by wrangler's Text rule (see wrangler.jsonc)
+import css from './styles.generated.css'
 
 const app = new Hono()
 

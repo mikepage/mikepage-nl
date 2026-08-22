@@ -2,14 +2,17 @@
   "name": "mikepage-nl",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy --minify",
+    "build:css": "tailwindcss -i ./src/styles.css -o ./src/styles.generated.css --minify",
+    "dev": "npm run build:css && wrangler dev",
+    "deploy": "npm run build:css && wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
     "hono": "^4.13.3"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^4.3.3",
     "wrangler": "^4.110.0"
   }
 }
