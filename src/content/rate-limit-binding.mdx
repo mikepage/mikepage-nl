@@ -1,0 +1,42 @@
+---
+title: A tiny rate limiter with the Workers binding
+date: 2026-08-22
+order: 3
+summary: The authless MCP server and JSON APIs needed a guardrail. Cloudflare's rate-limiting binding is about six lines — config plus one call.
+---
+
+Once the [tools](/tools) were [authless over MCP](/posts/agent-friendly-mcp), anyone could call them — and `dns_discovery` fans out ~50 subrequests per call. That wants a guardrail. Cloudflare has a rate-limiting binding built in, and it's about as small as it gets.
+
+## Configure it
+
+Declare a namespace in `wrangler.jsonc`. `period` must be **10 or 60** seconds — those are the only two values the binding supports:
+
+```jsonc
+// wrangler.jsonc
+"ratelimits": [
+  { "name": "API_RL", "namespace_id": "1001", "simple": { "limit": 120, "period": 60 } }
+]
+```
+
+Run `wrangler types` and the binding shows up as `API_RL: RateLimit` on your env.
+
+## Use it
+
+One call. It returns a `success` boolean — under budget or not — and you decide what 429 looks like. Key it by whatever identifies the caller; here, the client IP:
+
+```ts
+const key = request.headers.get('cf-connecting-ip') ?? 'local'
+const { success } = await env.API_RL.limit({ key })
+if (!success) return new Response('rate limit exceeded', { status: 429 })
+```
+
+I dropped that in front of both the JSON `/api` routes and the `/mcp` endpoint, keyed `api:<ip>` and `mcp:<ip>` so the two budgets don't interfere.
+
+## Two things worth knowing
+
+<ul class="checks">
+  <li class="plain"><strong>No binding locally?</strong> The wrapper returns <code>true</code> so <code>wrangler dev</code> never rate-limits you — the counting is an edge concern.</li>
+  <li class="plain"><strong>It's best-effort, not a strict quota.</strong> Counting is fast and approximate across the edge, not a transactional ledger. Perfect for shrugging off abuse; not what you'd bill against.</li>
+</ul>
+
+That's the whole feature: a namespace and one `await`. The tools stay open and authless, and a runaway client just meets a 429.

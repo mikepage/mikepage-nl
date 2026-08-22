@@ -1,0 +1,64 @@
+---
+title: Giving the tools an MCP server
+date: 2026-08-22
+order: 2
+summary: One engine per tool, reused by the HTML page, a JSON API, and an authless MCP server on a Durable Object.
+---
+
+The [tools](/tools) on this site already ran on the edge and rendered results as shareable URLs. The next question was: how do you let an *agent* use them — not just a human with a browser? This post is how I made the whole site agent-friendly and put the tools behind an authless MCP server, all on the same Worker.
+
+## One engine per tool
+
+The key move was refactoring each tool to a single source of truth. Every tool now exports an `Engine`: a name, a JSON Schema for its input, a `parse()` that validates raw params, and a `run()` that does the work and returns structured data.
+
+```ts
+interface Engine<I, R> {
+  name: string            // MCP tool name, e.g. "spf_check"
+  description: string
+  inputSchema: JsonSchema  // feeds OpenAPI *and* MCP
+  parse(q): { input: I } | { error: string }
+  run(input: I): Promise<R>
+}
+```
+
+The HTML page, the JSON API, and the MCP tool all call the same `parse()` + `run()`. No logic is written twice, so the SSRF guard on the SMTP probe — resolve the host, reject private ranges — protects every entry point at once, not just the web form.
+
+## The agent-friendly layer
+
+Four things make the site legible to an agent that arrives cold:
+
+<ul class="checks">
+  <li class="ok"><a href="/llms.txt">/llms.txt</a> — the map agents look for first: what the site is, the posts, and every tool with its JSON endpoint and MCP tool name.</li>
+  <li class="ok"><a href="/openapi.json">/openapi.json</a> — generated from the same engine schemas, so the docs can never drift from the code.</li>
+  <li class="ok">A JSON API on every tool — append <code>/api</code> to any tool URL, e.g. <code>/tools/dns-lookup/api?name=example.com</code>.</li>
+  <li class="ok"><code>/robots.txt</code> and <code>/sitemap.xml</code>, both built from the live registry.</li>
+</ul>
+
+## The MCP server: authless, on the same Worker
+
+The tools are read-only lookups over public data — DNS, SPF, DMARC, RDAP, an SMTP banner probe — so an **authless** MCP server is safe and, frankly, more fun: point any MCP client at `https://mikepage.nl/mcp` and the six tools show up ready to call.
+
+It uses Cloudflare's `McpAgent` from the `agents` SDK. The tools register themselves by iterating the engines — the JSON Schema is converted to a zod shape, and each call routes straight back through `parse()` and `run()`:
+
+```ts
+export class ToolsMcp extends McpAgent<CloudflareBindings> {
+  server = new McpServer({ name: 'mikepage-tools', version: '1.0.0' })
+  async init() {
+    for (const engine of engines) {
+      this.server.registerTool(engine.name,
+        { description: engine.description, inputSchema: toZodShape(engine.inputSchema) },
+        async (args) => {
+          const parsed = engine.parse(stringify(args))
+          if ('error' in parsed) return errorContent(parsed.error)
+          return jsonContent(await engine.run(parsed.input))
+        })
+    }
+  }
+}
+```
+
+One entry point splits traffic: `/mcp` goes to the agent, everything else to the Hono app.
+
+## Try it
+
+Add `https://mikepage.nl/mcp` as a remote MCP server in your client of choice, or just hit a JSON endpoint: [/tools/dns-lookup/api?name=cloudflare.com](/tools/dns-lookup/api?name=cloudflare.com). Same engine, three front doors.

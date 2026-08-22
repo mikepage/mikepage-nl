@@ -1,8 +1,9 @@
 # prod
 dist/
 
-# generated (built by npm run build:css)
+# generated (built by npm run build)
 src/styles.generated.css
+src/posts/generated/
 
 # dev
 .yarn/
