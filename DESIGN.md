@@ -66,6 +66,14 @@ One shared `Layout` component (`src/components/layout.tsx`):
 - No database, KV, analytics, or comments — add a binding only when a post's demo needs it
 - No RSS/sitemap yet (easy to add later as Hono routes)
 
+## Migration backlog: Deno Deploy projects
+
+Existing utilities on Deno Deploy to migrate to this Worker as posts with live demos (removed from the GitHub profile README on 2026-08-22):
+
+- Email & DNS: https://dmarc-validator.mikepage.deno.net · https://dns-lookup.mikepage.deno.net · https://dns-monitor.mikepage.deno.net · https://smtp-submission-test.mikepage.deno.net · https://spf-validator.mikepage.deno.net · https://rdap-lookup.mikepage.deno.net
+- Network: https://ipv6-utils.mikepage.deno.net
+- Web utilities: https://browserinfo.mikepage.deno.net
+
 ## Milestones
 
 1. Layout + home + post rendering + footer (~1–2 hours)
