@@ -3,6 +3,7 @@ import { Layout } from './components/layout'
 import { posts, findPost } from './posts'
 import { tools } from './tools'
 import { skills, findSkill, skillMd } from './skills'
+import { components } from './platform'
 import { llmsTxt, llmsFull, openApi, robotsTxt, apiCatalog, mcpCard, agentSkills, a2aCard, aiCatalog, protectedResource } from './lib/catalog'
 import { negotiate } from './lib/negotiate'
 import { allow, clientKey } from './lib/rate-limit'
@@ -99,7 +100,7 @@ app.get('/AUTH.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdo
 app.get('/.well-known/auth.md', (c) => c.text(authMd(c), 200, { 'Content-Type': 'text/markdown; charset=utf-8' }))
 app.get('/sitemap.xml', (c) => {
   const origin = new URL(c.req.url).origin
-  const urls = ['/', '/tools', '/skills', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/tools/${t.slug}`)]
+  const urls = ['/', '/platform', '/tools', '/skills', ...posts.map((p) => `/posts/${p.slug}`), ...tools.map((t) => `/tools/${t.slug}`)]
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls
     .map((u) => `  <url><loc>${origin}${u}</loc></url>`)
     .join('\n')}\n</urlset>\n`
@@ -166,8 +167,8 @@ app.get('/posts/:file', (c) => {
 
 app.get('/tools', (c) =>
   c.html(
-    <Layout title="Tools — mikepage.nl">
-      <h1>Tools</h1>
+    <Layout title="Experiments — mikepage.nl">
+      <h1>Experiments</h1>
       <p class="lede">
         Small network and email utilities, each one a live example of a Cloudflare Workers pattern — running on this very
         Worker.
@@ -181,6 +182,34 @@ app.get('/tools', (c) =>
           </li>
         ))}
       </ul>
+    </Layout>
+  )
+)
+
+app.get('/platform', (c) =>
+  c.html(
+    <Layout title="Platform — mikepage.nl">
+      <h1>The Cloudflare Developer Platform</h1>
+      <p class="lede">The key building blocks, explained for whoever you are — pick your lens.</p>
+      <div class="explain">
+        <div class="pills">
+          <input type="radio" name="aud" id="aud-eli5" checked />
+          <label for="aud-eli5">Explain like I'm five</label>
+          <input type="radio" name="aud" id="aud-laravel" />
+          <label for="aud-laravel">I'm a Laravel developer</label>
+          <input type="radio" name="aud" id="aud-symfony" />
+          <label for="aud-symfony">I'm a Symfony developer</label>
+        </div>
+        {components.map((comp) => (
+          <div class="component">
+            <h2>{comp.name}</h2>
+            <p class="tagline">{comp.tagline}</p>
+            <div class="aud eli5">{comp.eli5}</div>
+            <div class="aud laravel">{comp.laravel}</div>
+            <div class="aud symfony">{comp.symfony}</div>
+          </div>
+        ))}
+      </div>
     </Layout>
   )
 )

@@ -20,6 +20,15 @@ describe('pages', () => {
     expect((await SELF.fetch(`${H}/skills`)).status).toBe(200)
   })
 
+  it('serves the platform explainer with audience pills', async () => {
+    const res = await SELF.fetch(`${H}/platform`)
+    expect(res.status).toBe(200)
+    const body = await res.text()
+    expect(body).toContain('aud-laravel')
+    expect(body).toContain('aud-symfony')
+    expect(body).toContain('Durable Objects')
+  })
+
   it('404s unknown routes', async () => {
     expect((await SELF.fetch(`${H}/nope`)).status).toBe(404)
   })

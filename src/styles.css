@@ -160,6 +160,33 @@
   .skill .copy:hover { color: var(--color-glow); }
   .skill p { @apply text-muted; margin: 0.5rem 0 0.75rem; font-size: 0.95rem; }
 
+  /* Platform explainer — audience pills + panels (no-JS via :has) */
+  .pills { @apply flex flex-wrap gap-2; margin: 1.5rem 0 2.5rem; }
+  .pills input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .pills label {
+    @apply border border-line bg-card text-muted;
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .pills label:hover { color: var(--color-glow); }
+  .pills input:checked + label {
+    @apply bg-accent;
+    color: #14100a;
+    border-color: var(--color-accent);
+    font-weight: 600;
+  }
+  .pills input:focus-visible + label { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+  .component { border-bottom: 1px solid var(--color-line); padding: 1.25rem 0; }
+  .component h2 { margin: 0 0 0.2rem; }
+  .component .tagline { @apply text-glow; font-size: 0.9rem; margin: 0 0 0.6rem; }
+  .aud { display: none; line-height: 1.7; }
+  .explain:has(#aud-eli5:checked) .eli5,
+  .explain:has(#aud-laravel:checked) .laravel,
+  .explain:has(#aud-symfony:checked) .symfony { display: block; }
+  @supports not (selector(:has(*))) { .aud.eli5 { display: block; } }
+
   /* Callout / TLDR notice on posts */
   .notice {
     @apply rounded-xl border border-line bg-card;

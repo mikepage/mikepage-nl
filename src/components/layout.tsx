@@ -35,11 +35,14 @@ export const Layout = (props: { title: string; children: Child }) => (
             <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/">
               Posts
             </a>
-            <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/tools">
-              Tools
+            <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/platform">
+              Platform
             </a>
             <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/skills">
               Skills
+            </a>
+            <a class="text-[0.95rem] text-muted no-underline hover:text-glow" href="/tools">
+              Experiments
             </a>
           </nav>
         </header>
