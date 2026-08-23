@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from '../ui/layout'
 import { ExperimentShell } from '../ui/experiment-shell'
+import { Form, Input, Select, Button } from '../ui/ui'
 import { dohQuery, RECORD_TYPES, unquoteTxt, type DohAnswer, type DohResponse } from '../lib/doh'
 import { isDomain } from '../lib/domain'
 import type { Engine, Experiment } from './types'
@@ -73,17 +74,17 @@ router.get('/', async (c) => {
   return c.html(
     <Layout title="DNS lookup — mikepage.nl">
       <ExperimentShell experiment={dnsLookup}>
-        <form method="get">
-          <input type="text" name="name" placeholder="example.com" value={name} required />
-          <select name="type">
+        <Form method="get">
+          <Input name="name" placeholder="example.com" value={name} required />
+          <Select name="type">
             {RECORD_TYPES.map((t) => (
               <option value={t} selected={t === type}>
                 {t}
               </option>
             ))}
-          </select>
-          <button type="submit">Look up</button>
-        </form>
+          </Select>
+          <Button type="submit">Look up</Button>
+        </Form>
         {error && <p class="err">{error}</p>}
         {result &&
           ((result.Answer?.length ?? 0) > 0 ? (

@@ -84,25 +84,6 @@
     font-size: 0.85em;
   }
 
-  /* Form controls, site-wide */
-  form { @apply flex flex-wrap gap-3 my-8; }
-  input[type="text"],
-  select {
-    @apply bg-code border border-line text-ink rounded-field;
-    font: inherit;
-    padding: 0.6rem 0.9rem;
-  }
-  input[type="text"] { flex: 1 1 16rem; }
-  input[type="text"]:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
-  button {
-    @apply bg-accent font-semibold rounded-field;
-    color: #14100a;
-    border: none;
-    padding: 0.6rem 1.4rem;
-    cursor: pointer;
-  }
-  button:hover { background: var(--color-glow); }
-
   table { @apply w-full my-7; border-collapse: collapse; }
   th, td {
     @apply text-left;

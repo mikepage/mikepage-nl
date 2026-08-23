@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from '../ui/layout'
 import { ExperimentShell } from '../ui/experiment-shell'
+import { Form, Input, Button } from '../ui/ui'
 import { dohQuery, unquoteTxt, type DohAnswer } from '../lib/doh'
 import { isDomain } from '../lib/domain'
 import type { Engine, Experiment } from './types'
@@ -133,10 +134,10 @@ router.get('/', async (c) => {
   return c.html(
     <Layout title="DNS discovery — mikepage.nl">
       <ExperimentShell experiment={dnsDiscovery}>
-        <form method="get">
-          <input type="text" name="domain" placeholder="example.com" value={domain} required />
-          <button type="submit">Discover</button>
-        </form>
+        <Form method="get">
+          <Input name="domain" placeholder="example.com" value={domain} required />
+          <Button type="submit">Discover</Button>
+        </Form>
         {error && <p class="err">{error}</p>}
         {result && (
           <>

@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { connect } from 'cloudflare:sockets'
 import { Layout } from '../ui/layout'
 import { ExperimentShell } from '../ui/experiment-shell'
+import { Form, Input, Select, Button } from '../ui/ui'
 import { assertPublicHost } from '../lib/doh'
 import { isDomain } from '../lib/domain'
 import type { Engine, Experiment } from './types'
@@ -100,18 +101,18 @@ router.get('/', async (c) => {
   return c.html(
     <Layout title="SMTP submission test — mikepage.nl">
       <ExperimentShell experiment={smtpSubmissionTest}>
-        <form method="get">
-          <input type="text" name="host" placeholder="smtp.example.com" value={host} required />
-          <select name="port">
+        <Form method="get">
+          <Input name="host" placeholder="smtp.example.com" value={host} required />
+          <Select name="port">
             {PORTS.map((p) => (
               <option value={String(p)} selected={p === port}>
                 {p}
                 {p === 465 ? ' (implicit TLS)' : ''}
               </option>
             ))}
-          </select>
-          <button type="submit">Probe</button>
-        </form>
+          </Select>
+          <Button type="submit">Probe</Button>
+        </Form>
         {error && <p class="err">{error}</p>}
         {result && (
           <>

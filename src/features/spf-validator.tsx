@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from '../ui/layout'
 import { ExperimentShell } from '../ui/experiment-shell'
+import { Form, Input, Button } from '../ui/ui'
 import { txtRecords } from '../lib/doh'
 import { isDomain, isDnsName } from '../lib/domain'
 import type { Engine, Experiment } from './types'
@@ -120,10 +121,10 @@ router.get('/', async (c) => {
   return c.html(
     <Layout title="SPF validator — mikepage.nl">
       <ExperimentShell experiment={spfValidator}>
-        <form method="get">
-          <input type="text" name="domain" placeholder="example.com" value={domain} required />
-          <button type="submit">Validate</button>
-        </form>
+        <Form method="get">
+          <Input name="domain" placeholder="example.com" value={domain} required />
+          <Button type="submit">Validate</Button>
+        </Form>
         {error && <p class="err">{error}</p>}
         {result && (
           <>

@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from '../ui/layout'
 import { ExperimentShell } from '../ui/experiment-shell'
-import { Facts } from '../ui/ui'
+import { Facts, Form, Input, Button } from '../ui/ui'
 import { isDomain } from '../lib/domain'
 import type { Engine, Experiment } from './types'
 
@@ -92,10 +92,10 @@ router.get('/', async (c) => {
   return c.html(
     <Layout title="RDAP lookup — mikepage.nl">
       <ExperimentShell experiment={rdapLookup}>
-        <form method="get">
-          <input type="text" name="domain" placeholder="example.com" value={domain} required />
-          <button type="submit">Look up</button>
-        </form>
+        <Form method="get">
+          <Input name="domain" placeholder="example.com" value={domain} required />
+          <Button type="submit">Look up</Button>
+        </Form>
         {error && <p class="err">{error}</p>}
         {data && (
           <Facts
