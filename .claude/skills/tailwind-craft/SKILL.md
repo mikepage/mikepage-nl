@@ -92,25 +92,52 @@ impact.
    small, purposeful transitions signal care. Loud animation signals the
    opposite.
 
-## Where each rule lives (Tailwind v4)
+## Utilities in the markup — the default
 
-Keep the layers straight and you avoid specificity fights:
+Style with utility classes **in the markup**, not custom CSS. This is Tailwind's
+core recommendation, and the reasons are practical, not dogmatic: you design from
+the theme's constraints instead of magic numbers, changes are local (a class only
+affects its element — you never break another page), the styling travels with the
+markup when you copy a chunk, and the CSS file stops growing with every feature.
+Inline styles can't do hover/focus/responsive; utilities can.
 
-- **`@theme`** — the tokens above. Generates `bg-surface`, `text-ink`,
-  `border-line`, `font-display`, etc.
-- **`@layer base`** — element defaults for content you don't control per-element:
-  prose (`h1`–`h3`, `p`, `a`, `pre`, `code`, `table`) and form controls
-  (`input`, `select`, `button`). This is why a rendered Markdown post looks right
-  without classes on every tag.
-- **`@layer components`** — a *small* set of `@apply`-composed classes for
-  patterns you repeat and can't cleanly express inline (a `.btn`, a `.card`, a
-  check-list with `::before` markers). Composing from utilities keeps them in the
-  system.
-- **Utilities in the markup** — everything else, especially one-off layout.
+**Handle repetition with code, not CSS abstractions** — this is the part people
+get wrong. When markup repeats, reach for, in order:
 
-Rule of thumb: reach for a component class only on the third repetition, or when
-the pattern needs a pseudo-element/`::before` that utilities can't do. Two
-usages? Keep it inline.
+1. **A loop.** Repeated markup is almost always rendered from an array — the
+   source already has one copy. `posts.map((p) => <li class="…">…</li>)` has no
+   real duplication.
+2. **A component / template partial.** For reuse *across files*, make a small
+   component that carries the utilities — `<Card>`, `<Lede>`, `<Badge>`. This is
+   Tailwind's explicit recommendation for cross-file reuse (React/Vue/Svelte
+   components, or Blade/ERB/Hono-JSX partials). The utilities live in one place,
+   in the markup, where you can see them.
+3. **Custom CSS — last resort**, only when a partial feels heavy-handed.
+
+**Do NOT use `@apply` just to clean up your markup.** It recreates the exact
+problem utilities solve — a name to invent, a second file to jump to, CSS that
+grows and hides what an element actually looks like. Tailwind's own reuse guide
+doesn't even mention `@apply`. If you're extracting `.card { @apply … }` so the
+JSX looks tidier, make a `<Card>` component instead.
+
+## Where CSS is still the right tool
+
+Utilities can't do everything, and for these a stylesheet is correct — not a
+fallback. Keep them in the right layer:
+
+- **`@theme`** — design tokens (colors, fonts, radii, spacing). Encouraged; this
+  *is* the design system utilities draw from.
+- **`@layer base`** — defaults for bare elements you don't control per-tag:
+  prose from Markdown/MDX (`h1`–`h3`, `p`, `a`, `pre`, `code`, `table`) and form
+  controls. MDX renders `<p>`/`<h2>` with no `class`, so this is the only place
+  to style them — it's why a rendered post looks right. (Tailwind's own Typography
+  plugin works exactly this way.)
+- **`@layer components` / raw CSS** — things utilities genuinely can't express:
+  pseudo-elements (`::before` list markers, chevrons), keyframes/animations, and
+  CSS state logic (`:has()`, `input:checked + label`, a `.is-hidden` toggle).
+
+The test: if a utility or a JSX component can do it, do it there. Only what
+*needs* a selector, pseudo-element, or bare-element default belongs in CSS.
 
 ## Components without a library
 
@@ -118,24 +145,33 @@ You do not need JS or a kit for most "interactive" components — the platform a
 CSS state selectors cover a surprising amount, and native elements come with
 accessibility for free.
 
-**Button** (`@layer components`) — composed from utilities so it stays on-system:
+**Button** — a component that carries utilities, including its states, so the
+whole thing lives in the markup:
 
-```css
-.btn {
-  @apply inline-flex items-center gap-2 rounded-xl border border-line
-         bg-surface px-4 py-2 font-medium text-ink transition-colors;
-}
-.btn:hover { @apply border-transparent bg-accent text-[#14100a]; }
-.btn:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+```jsx
+export const Button = ({ children, ...props }) => (
+  <button
+    class="inline-flex items-center gap-2 rounded-field border border-line
+           bg-surface px-4 py-2 font-medium text-ink transition-colors
+           hover:border-transparent hover:bg-accent hover:text-[#14100a]
+           focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+    {...props}
+  >
+    {children}
+  </button>
+)
 ```
 
-**Card** — a plane, not a shadow box:
+**Card** — a plane, not a shadow box. A one-line component beats a `.card` class:
 
-```css
-.card { @apply rounded-2xl border border-line bg-surface p-6; }
+```jsx
+export const Card = ({ children, class: cls = '' }) => (
+  <div class={`rounded-box border border-line bg-surface p-6 ${cls}`}>{children}</div>
+)
 ```
 
-**Tabs / segmented control without JS** — radios + labels + `:has()`:
+**Tabs / segmented control without JS** — this one *does* need CSS, because the
+selected-state logic (`input:checked + label`, `:has()`) can't be a utility:
 
 ```html
 <div class="tabs">

@@ -39,7 +39,7 @@ describe('posts', () => {
     const res = await SELF.fetch(`${H}/posts/rate-limit-binding`)
     expect(res.status).toBe(200)
     const body = await res.text()
-    expect(body).toContain('class="notice"')
+    expect(body).toContain('📦 Skill')
     expect(body).toContain('cloudflare-workers-rate-limit')
   })
 

@@ -1,14 +1,15 @@
 import type { Child } from 'hono/jsx'
 import type { Experiment } from '../experiments/types'
+import { Lede, Meta, Pattern } from './ui'
 
 export const ExperimentShell = (props: { experiment: Experiment; children: Child }) => (
   <>
-    <p class="meta">
+    <Meta>
       <a href="/experiments">← All experiments</a>
-    </p>
+    </Meta>
     <h1>{props.experiment.title}</h1>
-    <p class="lede">{props.experiment.summary}</p>
-    <p class="pattern">⚡ Cloudflare pattern: {props.experiment.pattern}</p>
+    <Lede>{props.experiment.summary}</Lede>
+    <Pattern>⚡ Cloudflare pattern: {props.experiment.pattern}</Pattern>
     {props.children}
   </>
 )

@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { Layout } from './components/layout'
+import { Lede, Meta, Summary, Card } from './components/ui'
 import { posts, findPost } from './posts'
 import { experiments } from './experiments'
 import { skills, findSkill, skillMd } from './skills'
@@ -115,17 +116,19 @@ app.get('/', (c) => {
   return c.html(
     <Layout title="mikepage.nl — Building on the Cloudflare Developer Platform">
       <h1>Night-owl experiments on the edge</h1>
-      <p class="lede">
+      <Lede>
         Learning the Cloudflare Developer Platform after dark — fun, hands-on examples for
         Workers, Durable Objects, D1, R2 and friends. Every post ships with working code, and the
         demos run live on this very Worker.
-      </p>
-      <ul class="posts">
+      </Lede>
+      <ul class="mt-14 list-none p-0">
         {posts.map((post) => (
-          <li>
-            <a href={`/posts/${post.slug}`}>{post.title}</a>
-            <div class="meta">{post.date}</div>
-            <p class="summary">{post.summary}</p>
+          <li class="mb-8 rounded-box border border-line bg-card px-7 py-6">
+            <a class="font-display text-[1.35rem] font-[550] no-underline" href={`/posts/${post.slug}`}>
+              {post.title}
+            </a>
+            <Meta>{post.date}</Meta>
+            <Summary>{post.summary}</Summary>
           </li>
         ))}
       </ul>
@@ -143,10 +146,12 @@ app.get('/posts/:file', (c) => {
     <Layout title={`${post.title} — mikepage.nl`}>
       <article>
         <h1>{post.title}</h1>
-        <time datetime={post.date}>{post.date}</time>
+        <time class="mb-10 block text-[0.95rem] text-muted" datetime={post.date}>
+          {post.date}
+        </time>
         {related.length > 0 && (
-          <aside class="notice">
-            <strong>📦 Skill{related.length > 1 ? 's' : ''}</strong> — this post ships as{' '}
+          <aside class="mt-7 mb-10 rounded-box border border-line border-l-[3px] border-l-accent bg-card px-[1.15rem] py-[0.9rem] text-[0.95rem]">
+            <strong class="text-glow">📦 Skill{related.length > 1 ? 's' : ''}</strong> — this post ships as{' '}
             {related.length > 1 ? 'installable Claude Code skills' : 'an installable Claude Code skill'}:{' '}
             {related.map((s, i) => (
               <>
@@ -169,16 +174,18 @@ app.get('/experiments', (c) =>
   c.html(
     <Layout title="Experiments — mikepage.nl">
       <h1>Experiments</h1>
-      <p class="lede">
+      <Lede>
         Small network and email utilities, each one a live example of a Cloudflare Workers pattern — running on this very
         Worker.
-      </p>
-      <ul class="posts">
+      </Lede>
+      <ul class="mt-14 list-none p-0">
         {experiments.map((experiment) => (
-          <li>
-            <a href={`/experiments/${experiment.slug}`}>{experiment.title}</a>
-            <div class="meta">⚡ {experiment.pattern}</div>
-            <p class="summary">{experiment.summary}</p>
+          <li class="mb-8 rounded-box border border-line bg-card px-7 py-6">
+            <a class="font-display text-[1.35rem] font-[550] no-underline" href={`/experiments/${experiment.slug}`}>
+              {experiment.title}
+            </a>
+            <Meta>⚡ {experiment.pattern}</Meta>
+            <Summary>{experiment.summary}</Summary>
           </li>
         ))}
       </ul>
@@ -190,7 +197,7 @@ app.get('/platform', (c) =>
   c.html(
     <Layout title="Platform — mikepage.nl">
       <h1>The Cloudflare Developer Platform</h1>
-      <p class="lede">The key building blocks, explained for whoever you are — pick your lens.</p>
+      <Lede>The key building blocks, explained for whoever you are — pick your lens.</Lede>
       <div class="explain">
         <div class="pills">
           <input type="radio" name="aud" id="aud-eli5" checked />
@@ -201,13 +208,13 @@ app.get('/platform', (c) =>
           <label for="aud-symfony">I'm a Symfony developer</label>
         </div>
         {components.map((comp) => (
-          <div class="component">
-            <h2>{comp.name}</h2>
-            <p class="tagline">{comp.tagline}</p>
+          <Card class="mb-4 px-6 py-5">
+            <h2 class="mt-0 mb-1">{comp.name}</h2>
+            <p class="mb-2.5 text-[0.9rem] text-glow">{comp.tagline}</p>
             <div class="aud eli5">{comp.eli5}</div>
             <div class="aud laravel">{comp.laravel}</div>
             <div class="aud symfony">{comp.symfony}</div>
-          </div>
+          </Card>
         ))}
       </div>
     </Layout>
@@ -218,10 +225,12 @@ app.get('/skills', (c) =>
   c.html(
     <Layout title="Skills — mikepage.nl">
       <h1>Skills</h1>
-      <p class="lede mb-10">
-        Installable Claude Code skills distilled from the posts. Each is a <code>SKILL.md</code> —
-        drop it in <code>.claude/skills/&lt;name&gt;/SKILL.md</code> and your agent picks it up.
-      </p>
+      <div class="mb-10">
+        <Lede>
+          Installable Claude Code skills distilled from the posts. Each is a <code>SKILL.md</code> —
+          drop it in <code>.claude/skills/&lt;name&gt;/SKILL.md</code> and your agent picks it up.
+        </Lede>
+      </div>
       {[...skills]
         .sort((a, b) => a.id.localeCompare(b.id))
         .map((skill) => (
@@ -229,14 +238,14 @@ app.get('/skills', (c) =>
             <summary>
               <span class="skill-name">{skill.id}</span>
             </summary>
-            <p>{skill.description}</p>
-            <p class="meta">
+            <p class="mt-2 mb-3 text-[0.95rem] text-muted">{skill.description}</p>
+            <Meta>
               From: <a href={`/posts/${skill.post}`}>{skill.postTitle}</a> · Raw:{' '}
               <a href={`/skills/${skill.id}`}>/skills/{skill.id}</a>{' '}
               <button type="button" class="copy" data-copy>
                 Copy SKILL.md
               </button>
-            </p>
+            </Meta>
             <pre>
               <code>{skillMd(skill)}</code>
             </pre>

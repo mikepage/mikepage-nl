@@ -113,17 +113,7 @@
 }
 
 @layer components {
-  .lede { @apply text-muted; font-size: 1.15rem; max-width: 38rem; }
-  .pattern { @apply text-glow; font-size: 0.9rem; }
-  .meta { @apply text-muted; font-size: 0.85rem; margin-top: 0.35rem; }
-  .summary { @apply text-ink; margin: 0.6rem 0 0; }
-  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em; }
-
-  .posts { @apply list-none p-0; margin-top: 3.5rem; }
-  .posts li { @apply mb-8 rounded-box border border-line bg-card; padding: 1.5rem 1.75rem; }
-  .posts a { @apply font-display no-underline; font-weight: 550; font-size: 1.35rem; }
-
-  article time { @apply text-muted block; font-size: 0.95rem; margin-bottom: 2.5rem; }
+  /* Prose paragraphs come from MDX (bare <p>), so they need a selector. */
   article p { margin: 1.25rem 0; }
 
   /* Check lists — colors are utilities, the ::before markers are the edge case (kept raw) */
@@ -137,14 +127,6 @@
   .ok { color: var(--color-ok); }
   .warn { color: var(--color-warn); }
   .err { color: var(--color-err); }
-
-  .facts {
-    @apply grid gap-x-6 gap-y-2 rounded-box border border-line bg-card my-7;
-    grid-template-columns: max-content 1fr;
-    padding: 1.25rem 1.5rem;
-  }
-  .facts dt { @apply text-muted; }
-  .facts dd { margin: 0; overflow-wrap: anywhere; }
 
   /* Skills page — collapsible SKILL.md cards */
   .skill { @apply rounded-box border border-line bg-card; padding: 0.9rem 1.5rem; margin-bottom: 1rem; }
@@ -171,7 +153,6 @@
     cursor: pointer;
   }
   .skill .copy:hover { color: var(--color-glow); }
-  .skill p { @apply text-muted; margin: 0.5rem 0 0.75rem; font-size: 0.95rem; }
 
   /* Full-width sticky nav that hides on scroll-down, returns on scroll-up */
   .site-bar {
@@ -205,24 +186,11 @@
     font-weight: 600;
   }
   .pills input:focus-visible + label { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-  .component { @apply rounded-box border border-line bg-card; padding: 1.25rem 1.5rem; margin-bottom: 1rem; }
-  .component h2 { margin: 0 0 0.2rem; }
-  .component .tagline { @apply text-glow; font-size: 0.9rem; margin: 0 0 0.6rem; }
   .aud { display: none; line-height: 1.7; }
   .explain:has(#aud-eli5:checked) .eli5,
   .explain:has(#aud-laravel:checked) .laravel,
   .explain:has(#aud-symfony:checked) .symfony { display: block; }
   @supports not (selector(:has(*))) { .aud.eli5 { display: block; } }
-
-  /* Callout / TLDR notice on posts */
-  .notice {
-    @apply rounded-box border border-line bg-card;
-    border-left: 3px solid var(--color-accent);
-    padding: 0.9rem 1.15rem;
-    margin: 1.75rem 0 2.5rem;
-    font-size: 0.95rem;
-  }
-  .notice strong { color: var(--color-glow); }
 
   /* Nested SPF include tree — left guide line per level (the ├─ connectors are the edge case, kept raw) */
   .tree, .tree ul { @apply list-none; }

@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
 import { ExperimentShell } from '../components/experiment-shell'
+import { Facts } from '../components/ui'
 import { isDomain } from '../lib/domain'
 import type { Engine, Experiment } from './types'
 
@@ -97,22 +98,15 @@ router.get('/', async (c) => {
         </form>
         {error && <p class="err">{error}</p>}
         {data && (
-          <dl class="facts">
-            <dt>Domain</dt>
-            <dd>{data.domain}</dd>
-            <dt>Registrar</dt>
-            <dd>{data.registrar ?? 'unknown'}</dd>
-            <dt>Status</dt>
-            <dd>{data.status.length ? data.status.join(', ') : '—'}</dd>
-            {data.events.map((ev) => (
-              <>
-                <dt>{ev.action}</dt>
-                <dd>{ev.date}</dd>
-              </>
-            ))}
-            <dt>Nameservers</dt>
-            <dd>{data.nameservers.length ? data.nameservers.join(', ') : '—'}</dd>
-          </dl>
+          <Facts
+            rows={[
+              ['Domain', data.domain],
+              ['Registrar', data.registrar ?? 'unknown'],
+              ['Status', data.status.length ? data.status.join(', ') : '—'],
+              ...data.events.map((ev) => [ev.action, ev.date] as [string, string]),
+              ['Nameservers', data.nameservers.length ? data.nameservers.join(', ') : '—'],
+            ]}
+          />
         )}
       </ExperimentShell>
     </Layout>

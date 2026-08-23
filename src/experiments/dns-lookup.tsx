@@ -47,7 +47,7 @@ const Results = ({ answers, type }: { answers: DohAnswer[]; type: string }) => (
         <tr>
           <td>{a.name}</td>
           <td>{a.TTL}</td>
-          <td class="mono">{type === 'TXT' ? unquoteTxt(a.data) : a.data}</td>
+          <td class="font-mono text-[0.85em]">{type === 'TXT' ? unquoteTxt(a.data) : a.data}</td>
         </tr>
       ))}
     </tbody>
@@ -94,7 +94,7 @@ router.get('/', async (c) => {
             </p>
           ))}
         {name && !error && (
-          <p class="meta">
+          <p class="mt-1.5 text-[0.85rem] text-muted">
             JSON: <a href={`/experiments/dns-lookup/api?name=${name}&type=${type}`}>/experiments/dns-lookup/api?name={name}&type={type}</a>
           </p>
         )}

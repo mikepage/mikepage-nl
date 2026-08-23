@@ -101,10 +101,10 @@ const Section = ({ title, rows, empty }: { title: string; rows: Row[]; empty: st
         <tbody>
           {rows.map((r) => (
             <tr>
-              <td class="mono">{r.name}</td>
+              <td class="font-mono text-[0.85em]">{r.name}</td>
               <td>{r.type}</td>
               <td>{r.ttl}</td>
-              <td class="mono">{r.data}</td>
+              <td class="font-mono text-[0.85em]">{r.data}</td>
             </tr>
           ))}
         </tbody>
@@ -140,7 +140,7 @@ router.get('/', async (c) => {
         {error && <p class="err">{error}</p>}
         {result && (
           <>
-            <p class="meta">
+            <p class="mt-1.5 text-[0.85rem] text-muted">
               Probed {APEX_TYPES.length} apex record types, {DKIM_SELECTORS.length + 5} email-auth names, and{' '}
               {SUBDOMAINS.length} common subdomains — {total} records found.
             </p>
@@ -149,7 +149,7 @@ router.get('/', async (c) => {
             <Section title="Discovered subdomains" rows={result.subdomains} empty="None of the probed subdomains resolved." />
           </>
         )}
-        <p class="meta">
+        <p class="mt-1.5 text-[0.85rem] text-muted">
           Discovery-only, like dnsspy’s initial scan — a snapshot, not a monitor. Subdomains are found by probing a
           curated wordlist over DNS-over-HTTPS (no zone transfer), so this shows the common names, not every record that
           exists.

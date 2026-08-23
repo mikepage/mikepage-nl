@@ -130,7 +130,7 @@ router.get('/', async (c) => {
             </ul>
           </>
         )}
-        <p class="meta">
+        <p class="mt-1.5 text-[0.85rem] text-muted">
           Runs over a raw TCP socket from this Worker via <code>cloudflare:sockets</code>. Outbound port 25 is blocked on the
           platform, which is exactly why this tests <em>submission</em> (587/465), not relay.
         </p>

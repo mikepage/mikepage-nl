@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Layout } from '../components/layout'
 import { ExperimentShell } from '../components/experiment-shell'
+import { Facts, Meta, Mono } from '../components/ui'
 import type { Experiment } from './types'
 
 const CF_FIELDS = [
@@ -26,29 +27,20 @@ router.get('/', (c) => {
     <Layout title="Browser info — mikepage.nl">
       <ExperimentShell experiment={browserinfo}>
         <h2>What Cloudflare knows (request.cf)</h2>
-        <dl class="facts">
-          {CF_FIELDS.filter(([key]) => cf[key] != null).map(([key, label]) => (
-            <>
-              <dt>{label}</dt>
-              <dd class="mono">{String(cf[key])}</dd>
-            </>
-          ))}
-        </dl>
+        <Facts
+          rows={CF_FIELDS.filter(([key]) => cf[key] != null).map(([key, label]) => [
+            label,
+            <Mono>{String(cf[key])}</Mono>,
+          ])}
+        />
         <h2>What your browser sent</h2>
-        <dl class="facts">
-          {headers
-            .filter((h) => c.req.header(h))
-            .map((h) => (
-              <>
-                <dt>{h}</dt>
-                <dd class="mono">{c.req.header(h)}</dd>
-              </>
-            ))}
-        </dl>
-        <p class="meta">
+        <Facts
+          rows={headers.filter((h) => c.req.header(h)).map((h) => [h, <Mono>{c.req.header(h)}</Mono>])}
+        />
+        <Meta>
           Every field above arrives free on <code>request.cf</code> — no geo-IP database, no client-side JavaScript. (Empty
           fields when running under <code>wrangler dev</code> are normal; the edge fills them in production.)
-        </p>
+        </Meta>
       </ExperimentShell>
     </Layout>
   )

@@ -87,7 +87,7 @@ const TreeNode = ({ node }: { node: SpfNode }) => (
   <li>
     <span class="tree-label">
       {node.via !== 'root' && <span class="tree-via">{node.via}:</span>}
-      <span class="mono">{node.domain}</span>
+      <span class="font-mono text-[0.85em]">{node.domain}</span>
       {node.note && <span class="warn"> — {node.note}</span>}
     </span>
     {node.children.length > 0 && (
