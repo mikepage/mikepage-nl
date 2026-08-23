@@ -15,7 +15,7 @@
   --color-warn: #ffd166;
   --color-err: #ff7b72;
 
-  --font-display: "Fraunces", Georgia, serif;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-body: "Space Grotesk", system-ui, sans-serif;
 
   /* One system: fields (buttons, inputs, pills-as-tags) and boxes (cards, panels). */

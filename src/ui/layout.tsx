@@ -14,7 +14,7 @@ export const Layout = (props: { title: string; children: Child }) => (
       <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
       <link
         rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Space+Grotesk:wght@400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
       />
       <link rel="stylesheet" href="/styles.css" />
       <link rel="alternate" type="text/plain" href="/llms.txt" />
