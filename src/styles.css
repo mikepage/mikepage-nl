@@ -17,6 +17,10 @@
 
   --font-display: "Fraunces", Georgia, serif;
   --font-body: "Space Grotesk", system-ui, sans-serif;
+
+  /* One system: fields (buttons, inputs, pills-as-tags) and boxes (cards, panels). */
+  --radius-field: 10px;
+  --radius-box: 14px;
 }
 
 @layer base {
@@ -39,6 +43,18 @@
   }
   a:hover { color: var(--color-accent); }
 
+  /* Visible focus on every interactive element — polish and accessibility. */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Measure: cap running prose so lines stay ~66 characters. */
+  article { max-width: 44rem; }
+
   h1 {
     @apply font-display;
     font-weight: 550;
@@ -56,7 +72,7 @@
   }
 
   pre {
-    @apply bg-code border border-line rounded-xl overflow-x-auto my-7;
+    @apply bg-code border border-line rounded-box overflow-x-auto my-7;
     padding: 1.25rem 1.4rem;
     font-size: 0.85rem;
     line-height: 1.6;
@@ -72,18 +88,16 @@
   form { @apply flex flex-wrap gap-3 my-8; }
   input[type="text"],
   select {
-    @apply bg-code border border-line text-ink;
-    border-radius: 10px;
+    @apply bg-code border border-line text-ink rounded-field;
     font: inherit;
     padding: 0.6rem 0.9rem;
   }
   input[type="text"] { flex: 1 1 16rem; }
   input[type="text"]:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
   button {
-    @apply bg-accent font-semibold;
+    @apply bg-accent font-semibold rounded-field;
     color: #14100a;
     border: none;
-    border-radius: 10px;
     padding: 0.6rem 1.4rem;
     cursor: pointer;
   }
@@ -106,7 +120,7 @@
   .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em; }
 
   .posts { @apply list-none p-0; margin-top: 3.5rem; }
-  .posts li { @apply mb-8 rounded-2xl border border-line bg-card; padding: 1.5rem 1.75rem; }
+  .posts li { @apply mb-8 rounded-box border border-line bg-card; padding: 1.5rem 1.75rem; }
   .posts a { @apply font-display no-underline; font-weight: 550; font-size: 1.35rem; }
 
   article time { @apply text-muted block; font-size: 0.95rem; margin-bottom: 2.5rem; }
@@ -125,7 +139,7 @@
   .err { color: var(--color-err); }
 
   .facts {
-    @apply grid gap-x-6 gap-y-2 rounded-xl border border-line bg-card my-7;
+    @apply grid gap-x-6 gap-y-2 rounded-box border border-line bg-card my-7;
     grid-template-columns: max-content 1fr;
     padding: 1.25rem 1.5rem;
   }
@@ -133,7 +147,7 @@
   .facts dd { margin: 0; overflow-wrap: anywhere; }
 
   /* Skills page — collapsible SKILL.md cards */
-  .skill { @apply rounded-2xl border border-line bg-card; padding: 0.9rem 1.5rem; margin-bottom: 1rem; }
+  .skill { @apply rounded-box border border-line bg-card; padding: 0.9rem 1.5rem; margin-bottom: 1rem; }
   .skill > summary {
     @apply flex items-center;
     gap: 0.6rem;
@@ -150,8 +164,7 @@
   .skill[open] > summary::before { transform: rotate(90deg); }
   .skill .skill-name { @apply font-display; font-weight: 550; font-size: 1.1rem; }
   .skill .copy {
-    @apply bg-code border border-line text-muted;
-    border-radius: 8px;
+    @apply bg-code border border-line text-muted rounded-field;
     font: inherit;
     font-size: 0.8rem;
     padding: 0.3rem 0.7rem;
@@ -203,7 +216,7 @@
 
   /* Callout / TLDR notice on posts */
   .notice {
-    @apply rounded-xl border border-line bg-card;
+    @apply rounded-box border border-line bg-card;
     border-left: 3px solid var(--color-accent);
     padding: 0.9rem 1.15rem;
     margin: 1.75rem 0 2.5rem;

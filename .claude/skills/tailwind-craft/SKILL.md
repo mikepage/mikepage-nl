@@ -197,7 +197,7 @@ Components reference `bg-bg`/`text-ink` and simply follow.
 - Reaching for a component library when the look should be bespoke — it flattens
   identity and adds weight and base styles you'll fight.
 - More than one accent color, or the accent used everywhere.
-- Heavy or multiple drop-shadows; glon-everything gradients; pure-black `#000`
+- Heavy or multiple drop-shadows; glow-on-everything gradients; pure-black `#000`
   text on pure-white (use near-black/near-white).
 - Inconsistent radii, border widths, and ad-hoc spacing values.
 - Full-width running text with no measure.
