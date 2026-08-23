@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "build:posts": "node scripts/build-posts.mjs",
-    "build:css": "tailwindcss -i ./src/styles.css -o ./src/styles.generated.css --minify",
+    "build:css": "tailwindcss -i ./src/app/styles.css -o ./src/app/styles.generated.css --minify",
     "build": "npm run build:posts && npm run build:css",
     "test": "npm run build && vitest run",
     "dev": "npm run build && wrangler dev",

@@ -1,5 +1,5 @@
 import type { Child } from 'hono/jsx'
-import type { Experiment } from '../experiments/types'
+import type { Experiment } from '../features/types'
 import { Lede, Meta, Pattern } from './ui'
 
 export const ExperimentShell = (props: { experiment: Experiment; children: Child }) => (

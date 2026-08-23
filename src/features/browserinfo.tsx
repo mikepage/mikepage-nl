@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
-import { Layout } from '../components/layout'
-import { ExperimentShell } from '../components/experiment-shell'
-import { Facts, Meta, Mono } from '../components/ui'
+import { Layout } from '../ui/layout'
+import { ExperimentShell } from '../ui/experiment-shell'
+import { Facts, Meta, Mono } from '../ui/ui'
 import type { Experiment } from './types'
 
 const CF_FIELDS = [

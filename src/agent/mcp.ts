@@ -1,8 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { McpAgent } from 'agents/mcp'
 import { z, type ZodRawShape, type ZodTypeAny } from 'zod'
-import { experiments } from './experiments'
-import type { Engine, JsonSchema } from './experiments/types'
+import { experiments } from '../features'
+import type { Engine, JsonSchema } from '../features/types'
 
 const engines = experiments.map((x) => x.engine).filter((e): e is Engine => Boolean(e))
 

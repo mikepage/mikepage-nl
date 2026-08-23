@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
-import { Layout } from '../components/layout'
-import { ExperimentShell } from '../components/experiment-shell'
+import { Layout } from '../ui/layout'
+import { ExperimentShell } from '../ui/experiment-shell'
 import { txtRecords } from '../lib/doh'
 import { isDomain } from '../lib/domain'
 import type { Engine, Experiment } from './types'

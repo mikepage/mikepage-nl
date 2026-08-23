@@ -2,7 +2,7 @@
 dist/
 
 # generated (built by npm run build)
-src/styles.generated.css
+src/app/styles.generated.css
 src/posts/generated/
 src/skills/generated/
 

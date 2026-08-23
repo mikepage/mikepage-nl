@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "mikepage-nl",
-  "main": "src/index.tsx",
+  "main": "src/app/index.tsx",
   "compatibility_date": "2026-08-22",
   "compatibility_flags": ["nodejs_compat"],
   "rules": [{ "type": "Text", "globs": ["**/*.generated.css"] }],

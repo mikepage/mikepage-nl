@@ -1,5 +1,5 @@
 import { posts } from '../posts'
-import { experiments } from '../experiments'
+import { experiments } from '../features'
 
 /** llms.txt — the map agents look for first. https://llmstxt.org */
 export function llmsTxt(origin: string): string {
