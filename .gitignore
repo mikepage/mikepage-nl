@@ -36,3 +36,8 @@ lerna-debug.log*
 
 # misc
 .DS_Store
+
+# skills.sh installs (daisyUI etc. — kept local, not tracked)
+.agents/
+skills-lock.json
+.claude/skills/daisyui
