@@ -11,11 +11,7 @@ React's latest answer, React Server Components, is the most expensive answer any
 
 ## What RSC promised vs. what it does
 
-The pitch was *less JavaScript*: components that run only on the server ship no client code. What actually happens per request:
-
-- **The page ships twice.** The HTML, plus the serialized RSC payload the client runtime needs to reconstruct the tree. "Less JavaScript" often nets out to more bytes and more server CPU.
-- **The waterfall moved server-side but didn't disappear.** Nested async server components serialize their fetches unless you hoist and parallelize by hand — now on infrastructure you pay for, per request.
-- **A second component model landed on top of the first.** `"use client"` boundaries, serializability rules at every seam, and caching semantics Vercel has redesigned twice. Experts argue about the mental model in public, years in.
+The pitch was *less JavaScript*. In practice the page ships twice — HTML plus the serialized RSC payload needed to reconstruct the tree — data waterfalls moved server-side instead of disappearing, and a second component model (`"use client"` boundaries, serializability rules, twice-redesigned caching) landed on top of the first.
 
 The receipts are public. There's a [well-trafficked Next.js discussion](https://github.com/vercel/next.js/discussions/67048) showing the App Router responding significantly slower than the Pages Router it replaced — the flagship architecture losing to its own predecessor at plain SSR. Cal.com, the first large open-source codebase through the migration, needed [dedicated codemod tooling and a war-story write-up](https://codemod.com/blog/cal-next-migration), fought a [cold-start saga](https://cal.com/blog/cal-com-cold-start-resolution-blog), and spent release notes afterwards celebrating booking-page speed *recovery*. When the reference migration makes a traditional SPA look fast, the abstraction is answering the wrong question.
 
