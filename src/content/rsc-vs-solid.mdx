@@ -1,0 +1,53 @@
+---
+title: Why RSC lost me, and why Solid's SSR is the model that wins
+date: 2026-08-24
+order: 6
+summary: React Server Components promised less JavaScript and delivered more complexity — slower than the Pages Router it replaced. Solid 2.0 compiles the same components to strings on the server and real DOM in the browser, and shrinks the whole serving layer to one function.
+---
+
+Airbnb was server-rendering React in 2016 with [Hypernova](https://github.com/airbnb/hypernova), a service they had to build themselves, because their business depended on indexed, fast-first-paint listing pages. SSR was never a framework fashion — it's what a content- or marketplace-shaped product needs. The question was only ever how much you'd pay for it.
+
+React's latest answer, React Server Components, is the most expensive answer anyone has shipped. I think it failed — not in adoption numbers, Next.js is everywhere — but on its own stated goals. And I think Solid 2.0 just demonstrated what the right answer looks like.
+
+## What RSC promised vs. what it does
+
+The pitch was *less JavaScript*: components that run only on the server ship no client code. What actually happens per request:
+
+- **The page ships twice.** The HTML, plus the serialized RSC payload the client runtime needs to reconstruct the tree. "Less JavaScript" often nets out to more bytes and more server CPU.
+- **The waterfall moved server-side but didn't disappear.** Nested async server components serialize their fetches unless you hoist and parallelize by hand — now on infrastructure you pay for, per request.
+- **A second component model landed on top of the first.** `"use client"` boundaries, serializability rules at every seam, and caching semantics Vercel has redesigned twice. Experts argue about the mental model in public, years in.
+
+The receipts are public. There's a [well-trafficked Next.js discussion](https://github.com/vercel/next.js/discussions/67048) showing the App Router responding significantly slower than the Pages Router it replaced — the flagship architecture losing to its own predecessor at plain SSR. Cal.com, the first large open-source codebase through the migration, needed [dedicated codemod tooling and a war-story write-up](https://codemod.com/blog/cal-next-migration), fought a [cold-start saga](https://cal.com/blog/cal-com-cold-start-resolution-blog), and spent release notes afterwards celebrating booking-page speed *recovery*. When the reference migration makes a traditional SPA look fast, the abstraction is answering the wrong question.
+
+The root cause isn't sloppiness. React's unit of work is a virtual tree, so server rendering means running the reconciler against a tree that will be thrown away, then shipping enough of it to resurrect on the client. RSC doubled down: it made the tree itself the wire format.
+
+## Solid's answer: there is no tree
+
+Solid never had a virtual DOM, and the server has no DOM at all — so Solid's SSR simply doesn't build a tree anywhere. The compiler has two targets for the same JSX:
+
+- **Server:** components compile to template-string concatenation. `renderToStream` flushes literal HTML with dynamic holes — no reconciler, no serialized component graph, just strings.
+- **Client:** the same JSX compiles to real DOM node creation, with signal subscriptions attached directly to the nodes that depend on them.
+
+Async fits the model instead of fighting it: in Solid 2.0 a promise can live inside `createMemo`, a `<Loading>` boundary flushes its fallback in the shell, and the resolved content streams in as later chunks. That's the RSC streaming story, minus the payload duplication, the boundary directives, and the second component model.
+
+I proved this to myself with [a small repo](https://github.com/mikepage/solid-edge): full streaming SSR of async data on a Cloudflare Worker, hydration included, in a handful of files. No meta-framework.
+
+## The part that actually matters: the serving contract
+
+The Solid 2.0 RC's [quiet headline](https://www.solidjs.com/blog/solid-2-0-rc-the-big-reveal) is that SSR stopped being a framework and became a Vite plugin mode: `solid({ start: true, ssr: true })`. The plugin owns entries, dev serving, and the build, and the production contract is one function:
+
+```ts
+handleRequest(request: Request): Promise<Response>
+```
+
+The server bundle's default export is a fetch-shaped `{ fetch(request) }` — which is literally a Cloudflare Worker module. In my repo, `wrangler.jsonc` points `main` straight at Vite's server output. No adapter, no runtime shim, no framework server. Middleware is a chain of `(request, next) => Response`, and typed env vars are validated at build time with a leak check that fails compilation if a server secret reaches a client chunk.
+
+Compare the coupling running the other way: the App Router increasingly assumes Vercel-shaped infrastructure, and its caching layer is the platform's business model wearing a framework API. A web-standard `Request → Response` function composes with any host and keeps the framework bet reversible.
+
+## Why I think this model wins
+
+Everyone already conceded the reactivity argument: Vue's reactivity, Svelte 5 runes, Angular signals, Preact signals, and the TC39 signals proposal all converged on the fine-grained model Solid proved out. RSC is the last major architecture still betting on the tree.
+
+SSR is genuinely hard — two compile targets, hydration, streaming, serialization. The lesson of the RSC era is that you don't beat that complexity by adding a bigger abstraction on top; you beat it by picking primitives where the hard parts fall out naturally. Strings on the server, real DOM in the browser, signals in between, one function at the edge.
+
+That's not where the adoption numbers are today. It's where the architecture already went.
