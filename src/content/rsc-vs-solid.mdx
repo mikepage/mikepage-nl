@@ -34,7 +34,7 @@ The Solid 2.0 RC's [quiet headline](https://www.solidjs.com/blog/solid-2-0-rc-th
 handleRequest(request: Request): Promise<Response>
 ```
 
-The server bundle's default export is a fetch-shaped `{ fetch(request) }` — which is literally a Cloudflare Worker module. In [my Solid 2.0 install](https://github.com/mikepage/solid-edge), `wrangler.jsonc` points `main` straight at Vite's server output. No adapter, no runtime shim, no framework server. Middleware is a chain of `(request, next) => Response`, and typed env vars are validated at build time with a leak check that fails compilation if a server secret reaches a client chunk.
+The server bundle's default export is a fetch-shaped `{ fetch(request) }` — which is literally a Cloudflare Worker module. A plain Solid 2.0 install on a Worker needs nothing more: `wrangler.jsonc` points `main` straight at Vite's server output. No adapter, no runtime shim, no framework server. Middleware is a chain of `(request, next) => Response`, and typed env vars are validated at build time with a leak check that fails compilation if a server secret reaches a client chunk.
 
 Compare the coupling running the other way: the App Router increasingly assumes Vercel-shaped infrastructure, and its caching layer is the platform's business model wearing a framework API. A web-standard `Request → Response` function composes with any host and keeps the framework bet reversible.
 
