@@ -6,7 +6,7 @@ export function llmsTxt(origin: string): string {
   const lines: string[] = [
     '# mikepage.nl',
     '',
-    '> Night-owl experiments on the edge — learning the Cloudflare Developer Platform after dark, with fun examples that run live on the site\'s own Worker.',
+    '> Night-owl experiments on Cloudflare\'s edge — code that runs closest to the user, written after dark, with working examples that run live on the site\'s own Worker.',
     '',
     '## Posts',
   ]

@@ -114,12 +114,12 @@ app.get('/', (c) => {
     return c.text(llmsTxt(new URL(c.req.url).origin), 200, { 'Content-Type': 'text/markdown; charset=utf-8' })
   }
   return c.html(
-    <Layout title="mikepage.nl — Building on the Cloudflare Developer Platform">
+    <Layout title="mikepage.nl — Code on Cloudflare's edge">
       <h1>Night-owl experiments on the edge</h1>
       <Lede>
-        Learning the Cloudflare Developer Platform after dark — fun, hands-on examples for
-        Workers, Durable Objects, D1, R2 and friends. Every post ships with working code, and the
-        demos run live on this very Worker.
+        Writing code on Cloudflare's edge after dark — streaming SSR, frameworks without the
+        framework, durable state, and whatever else runs closest to the user. Every post ships
+        with working code, and the demos run live on this very Worker.
       </Lede>
       <ul class="mt-14 list-none p-0">
         {posts.map((post) => (
