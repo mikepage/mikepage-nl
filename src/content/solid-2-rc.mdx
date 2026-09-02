@@ -1,0 +1,48 @@
+---
+title: Solid 2.0 RC — signals all the way down, web standards all the way out
+date: 2026-08-24
+order: 6
+summary: Solid 2.0 brings async into the reactive graph, optimistic updates into core, and shrinks SSR to a web-standard Request → Response function — which happens to be exactly the shape of a Cloudflare Worker.
+---
+
+Fine-grained reactivity won. Vue's reactivity core was always signal-shaped and its new Vapor mode compiles the virtual DOM away entirely; Svelte 5's runes are signals under the hood; Angular rebuilt its change detection around `signal()` and `computed()`; Preact ships signals; Qwik is signals plus resumability. There's even a [TC39 proposal to standardize signals in JavaScript itself](https://github.com/tc39/proposal-signals), with authors from those teams collaborating on the primitive. Solid is the framework that proved this model out — and with the [2.0 RC](https://www.solidjs.com/blog/solid-2-0-rc-the-big-reveal), it's pushing it further than anyone.
+
+(For completeness: React remains the main framework organized around a virtual DOM rather than signals — a different bet, where updates re-render a tree and get reconciled, instead of signals updating exactly the nodes that depend on them. That's the whole comparison; the rest of this post is about Solid.)
+
+## What 2.0 actually ships
+
+The headline is that **async became a property of the reactive graph** rather than something bolted on beside it:
+
+- Feed a promise (or async generator) to `createMemo` inside a `<Loading>` boundary and it behaves like a synchronous memo. `createResource`, `batch`, and transitions largely disappear — the graph itself understands "not ready yet."
+- New boundaries — `<Loading>`, `<Errored>`, `<Reveal>` — coordinate reveal order and keep stale content visible while revalidating.
+- **Optimistic updates move into core**: `action`, `createOptimistic`, and `createOptimisticStore` render in-flight mutations immediately and reconcile when the server answers.
+- **Draft-first stores**: setters hand you a draft to mutate; `createProjection` and derived stores replace 1.x write-back patterns.
+- One keyed `<For>` replaces `For`/`Index`; `<Repeat>` renders by count with no diffing.
+- The packages now say the quiet part out loud: the reactive core is its own library, [`@solidjs/signals`](https://www.npmjs.com/package/@solidjs/signals), with `@solidjs/web` as the web runtime on top.
+
+## Two compile targets, no tree
+
+Solid's SSR story falls out of the same design. The server has no DOM, so the compiler gives the same JSX two targets:
+
+- **Server:** components compile to template-string concatenation. `renderToStream` flushes literal HTML with dynamic holes — no reconciler pass, no serialized component graph.
+- **Client:** the same JSX compiles to real DOM node creation, with signal subscriptions attached directly to the nodes that depend on them.
+
+Async fits instead of fighting: a `<Loading>` boundary flushes its fallback in the shell, and the resolved content streams in as later chunks. Streaming SSR without a second component model.
+
+## The serving contract is a web standard
+
+The 2.0 RC's quiet headline: SSR stopped being a framework and became a Vite plugin mode — `solid({ start: true, ssr: true })`. The plugin owns entries, dev serving, and the build, and the production contract is one function:
+
+```ts
+handleRequest(request: Request): Promise<Response>
+```
+
+The server bundle's default export is a fetch-shaped `{ fetch(request) }` — the WHATWG `Request → Response` pair that every modern JavaScript runtime speaks. Which means it's literally a Cloudflare Worker module: a plain Solid 2.0 install runs on Workers by pointing `wrangler.jsonc`'s `main` at Vite's server output. No adapter, no runtime shim, no framework server. Middleware is a chain of `(request, next) => Response`, and typed env vars are validated at build time with a leak check that fails compilation if a server secret reaches a client chunk.
+
+Building on web standards cuts both ways, and that's the point: the same function deploys to any host that speaks fetch, so the framework bet stays reversible.
+
+## Why this model wins
+
+The convergence is the evidence. Framework after framework has re-derived the same conclusion — fine-grained signals beat coarse re-rendering — and TC39 is now weighing the primitive for the language itself. Solid 2.0 is what it looks like when that model is taken all the way: strings on the server, real DOM in the browser, signals in between, and one standard function at the edge.
+
+That's not a hot take about anyone else's framework. It's just the architecture the ecosystem already voted for, taken seriously.
