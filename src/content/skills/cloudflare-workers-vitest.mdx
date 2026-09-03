@@ -46,4 +46,4 @@ it('serves the home page', async () => {
 ## Notes
 - `SELF.fetch()` runs the whole `fetch` handler — routing, middleware, redirects.
 - Build any generated assets (CSS, compiled content) before `vitest run`.
-- Don't call real external APIs in tests; assert validation/routing paths, and mock outbound fetches with `@msw/cloudflare`.
+- Don't call real external APIs in tests. Assert validation and routing paths instead, and where an outbound fetch is unavoidable, intercept it at the test boundary rather than hitting the network.

@@ -45,4 +45,4 @@ npm run deploy    # wrangler deploy
 ## Notes
 - Keep handlers inline in route definitions for path-param type inference.
 - Use `app.route('/section', subApp)` to split large apps by feature.
-- Read bindings from `c.env`; never reach for module-level singletons.
+- Read bindings from `c.env` on every request. A module-level singleton captures the first request's `env` and is reused across requests in the same isolate, so it serves stale or wrong bindings.
