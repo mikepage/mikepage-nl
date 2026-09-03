@@ -1,0 +1,43 @@
+---
+title: Working a big issue with Claude — where does the context live?
+date: 2026-09-03
+order: 7
+summary: A parent issue with eight sub-issues doesn't fit in one session. Should findings go into GitHub issues, or into one long session that fans out subagents? After trying both, the answer is issues plus short sessions, with subagents kept on a very short leash.
+---
+
+The hard part of a large issue isn't the code. It's that the work outlives any one context window. A parent issue with eight sub-issues means days of sessions, and everything Claude learned in session one is gone by session four unless it was written down somewhere Claude can read it back.
+
+There are two obvious places to put that memory: **GitHub issues**, or **one long session that delegates to subagents**. I've tried both.
+
+## The one-session-with-subagents approach
+
+The pitch is attractive. Keep a single coordinating session, give each sub-issue to a subagent, let the coordinator hold the big picture. In practice it broke down for me in three ways:
+
+- **Subagents fail quietly.** A subagent that misreads the task, hits a permission prompt nobody sees, or runs out of context returns a plausible-looking report. The coordinator takes it at face value. You only find out when you run the tests.
+- **Babysitting is harder, not easier.** With one session you watch one stream of tool calls and can interrupt. With five subagents you get five summaries after the fact, and the summaries are what you're now debugging.
+- **The coordinator's context fills anyway.** Every subagent report lands in the parent. Compaction eventually eats the early decisions, and the coordinator starts contradicting sub-issue three while working on sub-issue seven.
+
+Subagents are good at one thing: scoped, read-only work with a crisp question. "Find every caller of this function and tell me which ones pass null" is a great subagent task. "Implement sub-issue 4" is not.
+
+## The GitHub-issues approach
+
+The alternative is boring: make the issue tracker the memory.
+
+- **One sub-issue per session.** Start clean, paste the sub-issue URL, let Claude read the parent and siblings with `gh issue view`. Context is small and on-topic.
+- **Findings go back into the issue, not the chat.** When Claude discovers that the migration needs a backfill, or that two sub-issues touch the same module, that becomes a comment on the issue. The next session reads it for free.
+- **Close with a written handoff.** Before the session ends, have Claude post what was done, what was left, and what surprised it. That comment is the prompt for tomorrow.
+- **The parent issue is the plan.** Keep a checklist there, tick items as PRs merge, and record decisions as comments. Claude reads it at the start of every session and the plan never drifts from reality.
+
+Everything Claude needs is now durable, versioned, and readable by humans too. If a session goes sideways you close the terminal and lose nothing.
+
+## What I actually do now
+
+- Break the parent issue down myself, or with Claude in a planning session that produces sub-issues and nothing else.
+- One session per sub-issue, one PR per session. Small enough that compaction rarely triggers.
+- Subagents only for parallel read-only exploration inside a session, never for implementation.
+- Every session ends with a comment on the issue. No comment, the session didn't happen.
+- Repo-level conventions live in `CLAUDE.md`. Issue-level state lives in the issue. Nothing important lives only in a chat transcript.
+
+## The lesson
+
+Context has to live somewhere that survives the session, and a chat window isn't it. GitHub issues already are that place; the tracker was designed for exactly this kind of long-running, multi-person state. Treat Claude as one more person on the issue who reads the thread before starting and writes to it before leaving, and the "how do I keep context" problem mostly disappears.
