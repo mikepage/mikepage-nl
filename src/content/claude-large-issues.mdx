@@ -17,11 +17,13 @@ The code shipped. The process didn't hold: the plan drifted, bookkeeping piled u
 
 ### A coordinator with subagents implementing sub-issues
 
-One long session delegating each piece. The model docs say Claude Fable is "significantly more dependable at dispatching and sustaining parallel subagents", and for research and fresh-context review that held.
+One long session hands each sub-issue to a subagent and waits. While a subagent works you see nothing: no tool calls, no files being read, no wrong turn as it happens. When it finishes, it returns a summary, and that summary is all the coordinator ever learns about what was done.
 
-For implementation it didn't. A subagent that had misread a sub-issue reported back a few lines, and those few lines were all the coordinator had. I ended up debugging summaries instead of watching work.
+That is fine when the task is a question. The model docs say Claude Fable is "significantly more dependable at dispatching and sustaining parallel subagents", and for research and for reviewing a diff in a fresh context that held. A few lines back is exactly what you want from research.
 
-The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) draw the same line: a subagent "returns only the summary", and the main conversation should own anything where "multiple phases share significant context, such as planning, implementation, and testing". Subagents are for research and for reviewing a diff in a fresh context, not for implementing.
+For implementation it is the problem. A subagent that misread its sub-issue and one that got it right both come back with a confident paragraph. The coordinator cannot tell them apart, so it builds on both. By the time the tests fail, the context that would explain why is gone with the subagent, and I was debugging summaries instead of watching work.
+
+The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) draw the same line: a subagent "returns only the summary", and the main conversation should own anything where "multiple phases share significant context, such as planning, implementation, and testing". Implementing a sub-issue is all three phases at once. Subagents are for research and for review, not for building.
 
 ### An epic with a sub-issue per step
 
