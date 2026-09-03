@@ -5,28 +5,72 @@ order: 7
 summary: An epic doesn't fit in one context window. A test running onboarding and demo-data work mostly autonomously produced seven sub-issues and more prose than code, and the code turned out to be the only record worth reading.
 ---
 
-The hard part of a large issue isn't the code. It's that the work outlives any one context window. The docs call the context window ["the most important resource to manage"](https://code.claude.com/docs/en/best-practices), and every session ["begins with a fresh context window"](https://code.claude.com/docs/en/memory). Whatever Claude learned in session one is gone by session four unless it was written somewhere Claude reads back.
+The hard part of a large issue isn't the code. It's that the work outlives any one context window.
 
-I tested this deliberately. An epic of onboarding and demo-data work was handed to Claude Fable 5.1 as a long-running, mostly autonomous task. The code shipped. The process didn't hold: the plan drifted, bookkeeping piled up, and small decisions grew ceremony. Autonomous long-running failed for this kind of work.
+The docs call the context window ["the most important resource to manage"](https://code.claude.com/docs/en/best-practices), and every session ["begins with a fresh context window"](https://code.claude.com/docs/en/memory). Whatever Claude learned in session one is gone by session four unless it was written somewhere Claude reads back.
+
+I tested this deliberately. An epic of onboarding and demo-data work was handed to Claude Fable 5.1 as a long-running, mostly autonomous task.
+
+The code shipped. The process didn't hold: the plan drifted, bookkeeping piled up, and small decisions grew ceremony. Autonomous long-running failed for this kind of work.
 
 ## What went wrong
 
-**A coordinator with subagents implementing sub-issues.** One long session delegating each piece. The model docs say Claude Fable is "significantly more dependable at dispatching and sustaining parallel subagents", and for research and fresh-context review that held. For implementation it didn't: a subagent that had misread a sub-issue reported back a few lines, and those few lines were all the coordinator had. I ended up debugging summaries instead of watching work. The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) draw the same line: a subagent "returns only the summary", and the main conversation should own anything where "multiple phases share significant context, such as planning, implementation, and testing". Subagents are for research and for reviewing a diff in a fresh context, not for implementing.
+### A coordinator with subagents implementing sub-issues
 
-**An epic with a sub-issue per step.** Seven sub-issues. Weeks later: three PRs, six sub-issues with zero comments, one still open after its PR merged, and one step that stopped existing when the approach changed. The smallest step began as "curate the images", was rewritten twice as the answer became "the collected set is the curated set", and shipped as a note field swapped in a JSON manifest plus two lines elsewhere. One commit's worth of change, delivered with a rewritten issue, a full PR body, and a review cycle. Every finding that mattered landed in the parent issue anyway. The docs never suggest sub-issues; they suggest one spec, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then a fresh session to execute it.
+One long session delegating each piece. The model docs say Claude Fable is "significantly more dependable at dispatching and sustaining parallel subagents", and for research and fresh-context review that held.
+
+For implementation it didn't. A subagent that had misread a sub-issue reported back a few lines, and those few lines were all the coordinator had. I ended up debugging summaries instead of watching work.
+
+The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) draw the same line: a subagent "returns only the summary", and the main conversation should own anything where "multiple phases share significant context, such as planning, implementation, and testing". Subagents are for research and for reviewing a diff in a fresh context, not for implementing.
+
+### An epic with a sub-issue per step
+
+Seven sub-issues. Weeks later: three PRs, six sub-issues with zero comments, one still open after its PR merged, and one step that stopped existing when the approach changed.
+
+The smallest step began as "curate the images". It was rewritten twice as the answer became "the collected set is the curated set", and shipped as a note field swapped in a JSON manifest plus two lines elsewhere. One commit's worth of change, delivered with a rewritten issue, a full PR body, and a review cycle.
+
+Every finding that mattered landed in the parent issue anyway. The docs never suggest sub-issues. They suggest one spec, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then a fresh session to execute it.
 
 ## What I expected to work, and didn't
 
-The parent issue as living spec: tables for **steps**, **decisions**, and **findings**, updated every session. Claude kept them perfectly. I couldn't follow them. Seven issues, three PRs, dozens of prompts, and every one of them a paragraph about a few lines of code. The prose around the change outgrew the change. When I finally wanted to know what the demo-data feature did, I read the code, and understood it in a fraction of the time. The tables were context for Claude, written at Claude's volume, and a human can't carry that either.
+The parent issue as living spec: tables for **steps**, **decisions**, and **findings**, updated every session. Claude kept them perfectly. I couldn't follow them.
 
-That's the real finding. The code is the only artifact both of us read the same way. Everything else, issue, PR body, transcript, is scaffolding for one party's memory, and the docs already say where the scaffolding should be small: `CLAUDE.md` should exclude ["information that changes frequently"](https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md), and compaction eats the transcript. The issue tracker was the one place left, and it filled up.
+Seven issues, three PRs, dozens of prompts, and every one of them a paragraph about a few lines of code. The prose around the change outgrew the change. When I finally wanted to know what the demo-data feature did, I read the code, and understood it in a fraction of the time.
+
+The tables were context for Claude, written at Claude's volume, and a human can't carry that either.
+
+That's the real finding. The code is the only artifact both of us read the same way. Everything else, issue, PR body, transcript, is scaffolding for one party's memory.
+
+The docs already say where the scaffolding should be small: `CLAUDE.md` should exclude ["information that changes frequently"](https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md), and compaction eats the transcript. The issue tracker was the one place left, and it filled up.
 
 ## How Claude differs from a human, and what follows
 
-**A human remembers across weeks. Claude forgets at the end of every session, and a long session degrades before it ends.** The docs: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections." So the durable memory is the code itself plus one short plan, `/clear` is the default between pieces and after the second correction, and work is split only when a different person will pick the piece up.
+### A human remembers across weeks. Claude forgets at the end of every session.
 
-**A human who is tired slows down and says so. Claude keeps producing at the same confidence.** That is the docs' "trust-then-verify gap": a "plausible-looking implementation that doesn't handle edge cases". Under bypass permissions Claude doesn't plan at all in my sessions, it starts editing. Productive on a bounded fix, and on an epic exactly where the slop comes from. So the unit of delegation is one PR you'll actually read with a check Claude can run, and nothing writes to the tracker from a polluted context. A tired session recording its decisions is how one messy context becomes a pile of messy issues.
+A long session degrades before it ends. The docs: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections."
 
-**A human fills gaps in a ticket with judgment. Claude fills them with output.** So the judgment happens first, in a plan. The docs' order is ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), and planning matters most when the approach is uncertain, many files change, or the code is unfamiliar. An epic is all three. Start in plan mode, implement in auto mode. Plan mode is never triggered for you, and under bypass its edit block [isn't enforced](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode). The plan also fixes the order: everything the feature needs but is not the feature, the scripts, schema, helpers and fixtures, lands first in small tooling PRs with no business meaning. Then the feature goes in as one PR of pure logic on tools that already exist. Mixing the two is what made the epic unreviewable: a helper, a schema and a behaviour in one diff means three unrelated questions at once. One planning session would have cut most of the ceremony above to one spec, one or two tooling PRs, and one feature PR.
+So the durable memory is the code itself plus one short plan. `/clear` is the default between pieces and after the second correction. Work is split only when a different person will pick the piece up.
 
-Context has to live somewhere that survives the session, and for a human that place turned out to be the diff. Keep the plan short, keep the PRs small, and let the code be the record. Everything written about the code should stay smaller than the code. The [architect skill](/skills/architect) that accompanies this post is the attempt to make Claude work that way by default.
+### A human who is tired slows down and says so. Claude keeps producing at the same confidence.
+
+That is the docs' "trust-then-verify gap": a "plausible-looking implementation that doesn't handle edge cases".
+
+Under bypass permissions Claude doesn't plan at all in my sessions, it starts editing. Productive on a bounded fix, and on an epic exactly where the slop comes from.
+
+So the unit of delegation is one PR you'll actually read, with a check Claude can run. Nothing writes to the tracker from a polluted context. A tired session recording its decisions is how one messy context becomes a pile of messy issues.
+
+### A human fills gaps in a ticket with judgment. Claude fills them with output.
+
+So the judgment happens first, in a plan. The docs' order is ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), and planning matters most when the approach is uncertain, many files change, or the code is unfamiliar. An epic is all three.
+
+Start in plan mode, implement in auto mode. Plan mode is never triggered for you, and under bypass its edit block [isn't enforced](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode).
+
+The plan also fixes the order. Everything the feature needs but is not the feature, the scripts, schema, helpers and fixtures, lands first in small tooling PRs with no business meaning. Then the feature goes in as one PR of pure logic on tools that already exist.
+
+Mixing the two is what made the epic unreviewable: a helper, a schema and a behaviour in one diff means three unrelated questions at once. One planning session would have cut most of the ceremony above to one spec, one or two tooling PRs, and one feature PR.
+
+## The record is the diff
+
+Context has to live somewhere that survives the session, and for a human that place turned out to be the diff. Keep the plan short, keep the PRs small, and let the code be the record.
+
+Everything written about the code should stay smaller than the code. The [architect skill](/skills/architect) that accompanies this post is the attempt to make Claude work that way by default.
