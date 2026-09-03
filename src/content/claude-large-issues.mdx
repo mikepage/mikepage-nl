@@ -21,6 +21,8 @@ The tracker-shaped version of the same idea. Break the epic into sub-issues, one
 
 A recent epic of mine, onboarding and demo-data work for a multi-tenant product, went this way: a parent issue and seven sub-issues. Weeks later the score is three PRs, six sub-issues with zero comments, one still open after its PR merged, and one step that quietly stopped existing when the approach changed. Every finding that mattered landed in the parent, not in the child it belonged to. The whole thing would have been one or two PRs against the parent.
 
+The smallest step shows the cost best. It began as "curate which images belong per category". After the images were collected the answer turned out to be that the collected set *is* the curated set, so the sub-issue was rewritten to say so. Then it was rewritten again as the wording settled. What finally shipped was a note field swapped on every entry of a JSON manifest, a sentence in a README, and a log line in a script. One commit's worth of change. It arrived with a rewritten issue, a PR body with verify steps and a "not changed, deliberately" section, and a review cycle. All of that ceremony was Claude being thorough about a decision that took a sentence to make.
+
 The docs never suggest sub-issues. They suggest a spec: have Claude interview you, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then "start a fresh session to execute it". The useful spec "names the files and interfaces involved, states what is out of scope, and ends with an end-to-end verification step". One document, not seven tickets.
 
 ## What actually worked
