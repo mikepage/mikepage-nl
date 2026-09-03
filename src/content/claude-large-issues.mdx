@@ -15,23 +15,31 @@ The code shipped. The process didn't hold: the plan drifted, bookkeeping piled u
 
 ## What went wrong
 
-### A coordinator with subagents implementing sub-issues
+Two setups were tried. Both lost the context they were supposed to keep.
 
-One long session hands each sub-issue to a subagent and waits. While a subagent works you see nothing: no tool calls, no files being read, no wrong turn as it happens. When it finishes, it returns a summary, and that summary is all the coordinator ever learns about what was done.
+### Subagents implementing sub-issues
 
-That is fine when the task is a question. The model docs say Claude Fable is "significantly more dependable at dispatching and sustaining parallel subagents", and for research and for reviewing a diff in a fresh context that held. A few lines back is exactly what you want from research.
+The setup: one long session as coordinator, one subagent per sub-issue.
 
-For implementation it is the problem. A subagent that misread its sub-issue and one that got it right both come back with a confident paragraph. The coordinator cannot tell them apart, so it builds on both. By the time the tests fail, the context that would explain why is gone with the subagent, and I was debugging summaries instead of watching work.
+The problem: a subagent is a black box. While it works you cannot see what it is doing. When it is done it returns a short summary, and the coordinator knows nothing else about the work.
 
-The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) draw the same line: a subagent "returns only the summary", and the main conversation should own anything where "multiple phases share significant context, such as planning, implementation, and testing". Implementing a sub-issue is all three phases at once. Subagents are for research and for review, not for building.
+That is fine for research and for review, where a short answer is the goal. The model docs say Claude Fable is "significantly more dependable at dispatching and sustaining parallel subagents", and for those two uses that held.
 
-### An epic with a sub-issue per step
+For building it fails. A subagent that misunderstood the task and one that got it right both return a confident summary. The coordinator cannot tell the difference and builds on both. When the tests fail later, the context that would explain why is gone.
 
-Seven sub-issues. Weeks later: three PRs, six sub-issues with zero comments, one still open after its PR merged, and one step that stopped existing when the approach changed.
+The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) say the same: a subagent "returns only the summary", and the main conversation should own work where "multiple phases share significant context, such as planning, implementation, and testing". Building a sub-issue is all three.
 
-The smallest step began as "curate the images". It was rewritten twice as the answer became "the collected set is the curated set", and shipped as a note field swapped in a JSON manifest plus two lines elsewhere. One commit's worth of change, delivered with a rewritten issue, a full PR body, and a review cycle.
+### One sub-issue per step
 
-Every finding that mattered landed in the parent issue anyway. The docs never suggest sub-issues. They suggest one spec, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then a fresh session to execute it.
+The setup: the epic split into seven sub-issues, one session per sub-issue, GitHub as the memory.
+
+The result after a few weeks: three PRs merged. Six of the seven sub-issues had no comments at all. One was still open after its PR had merged. One step was dropped entirely when the approach changed.
+
+The overhead was the problem. The smallest step ended up as one commit's worth of change, but it arrived with an issue that had been rewritten twice, a full PR description, and a review round. The same happened, at smaller scale, on every step.
+
+Meanwhile every finding that mattered was written into the parent issue, not into the sub-issue it belonged to. The sub-issues held no memory. They were bookkeeping that Claude maintained and nobody read.
+
+The docs never suggest sub-issues. They suggest one spec, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then a fresh session to execute it.
 
 ## What I expected to work, and didn't
 
