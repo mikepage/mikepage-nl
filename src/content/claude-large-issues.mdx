@@ -83,7 +83,7 @@ Mixing the two is what made the epic unreviewable: a helper, a schema and a beha
 
 Context has to live somewhere that survives the session, and for a human that place turned out to be the diff. Keep the plan short, keep the PRs small, and let the code be the record.
 
-Everything written about the code should stay smaller than the code. The [architect skill](/skills/architect) that accompanies this post is the attempt to make Claude work that way by default. When it triggers, a run goes like this:
+Everything written about the code should stay smaller than the code. The [architect skill](/skills/architect) that accompanies this post is the attempt to make Claude work that way by default. For anything vague, the companion [interview skill](/skills/interview) runs first: it asks the questions the docs suggest, writes a self-contained `SPEC.md`, and hands off to a fresh session. From there a run goes like this:
 
 1. **Read the code first.** The directories the work touches, the nearest similar feature, the repo's own skills. Read the parent issue once for intent. Name the pattern to follow.
 2. **Write one plan file.** Readable in a minute: slices in order with tooling before feature, non-obvious decisions with a one-line why, open questions for the human. End the turn there if an open question changes the shape of the work.

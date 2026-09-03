@@ -1,0 +1,39 @@
+---
+description: Interview the user about a feature or epic before any planning or code, then write a self-contained SPEC.md and hand off to a fresh session. Use when the user gives a one-line feature idea, says "interview me", "spec this out", or "before we build", when an issue is vague about scope or done-ness, or whenever the architect skill would otherwise have to guess at open questions. Plan mode with the result written down.
+post: claude-large-issues
+postTitle: Architect — concepts into code, not prose
+order: 7
+---
+
+# Interview: the spec before the plan
+
+Plan mode produces a plan and throws the conversation away. An interview produces a spec file that a fresh session can read, so the requirements survive the context that gathered them. The Claude Code docs recommend exactly this for larger features: interview first, write the spec, then "start a fresh session to execute it".
+
+The interview exists because a vague request gets filled with output. Claude fills gaps by building something that satisfies the words, and the human finds out what was assumed only when reviewing the diff. Asking first moves those assumptions to where they are cheap to correct.
+
+## How the interview runs
+
+Use the AskUserQuestion tool. Ask in rounds of two to four questions, each with concrete options where options exist, so the user picks rather than composes. Skip anything the codebase or the request already answers; read the code before the first round so the questions are specific to this repo.
+
+Dig into the parts the user has probably not considered: what "done" looks like and how it is verified, what is explicitly out of scope, which existing pattern the work follows, what happens on the failure and empty paths, what changes for other users of the touched code, and what the deadline or reversibility constraints are. Ask about the why behind the request as well as the what; a spec that carries the reason lets the implementing session make routine calls without asking again.
+
+Stop when a round produces no new information, or when the user says the picture is complete. Do not interview past that point; three or four rounds is typical.
+
+## The spec
+
+Write `SPEC.md` at the repo root, or next to the feature if the repo keeps specs there. It is self-contained: a session that has read nothing else can build from it. It states:
+
+- The goal and the reason, in the user's words where possible.
+- The files and interfaces involved, and the existing pattern the work follows.
+- What is out of scope, named explicitly.
+- The behaviours, one line each, phrased so each can become one test.
+- The decisions made during the interview, each with its one-line why.
+- An end-to-end verification step that proves the feature works.
+
+Keep it readable in a few minutes. A spec is not a design document; the design happens in the plan and the code.
+
+## Handoff
+
+End the turn by telling the user to start a fresh session and run the architect skill against the spec. Do not begin implementing in the interview session; its context is full of options that were considered and rejected, and the docs are clear that "a clean session with a better prompt almost always outperforms a long session with accumulated corrections".
+
+The spec lives until the feature ships and is deleted with the plan file. Anything in it worth keeping afterwards moves into a test, a type, or `CLAUDE.md`.
