@@ -53,7 +53,3 @@ Scope decisions, which slices to merge, and anything the issue leaves genuinely 
 ## Working with repo skills that ask for more
 
 Repos often carry skills for creating issues, implementing issues, and opening PRs that ask for labels, templates, and structured bodies. Follow their mechanics: branch rules, labels, base branch, worktree. Where they ask for documentation volume, this skill wins: the body stays a paragraph and no sub-issues are opened. The house rules are about process safety; the volume was never the point.
-
-## An illustration, not a template
-
-A parent issue asks for a curated image set per customer category and has grown seven sub-issues: a manifest format, an import, a curation pass, a pooling script, copying a set into a new account, and two callers that use it. Reading the code first shows the repo already has a scripts pattern and a feature-directory pattern to follow. The plan becomes two slices. Tooling first: the manifest schema with a round-trip test, the pooling script in the existing scripts style, and a copy function with a test that a target account ends up with its category's images. Then the feature: the two callers, one test each. The curation step disappears because the collected set turns out to be the set, and that fact lives as one comment in the collector. Two PRs, each body one paragraph, no sub-issues touched, no findings comments. The shape of this outcome varies with the repo; what carries over is the order and the absence of prose.
