@@ -2,42 +2,48 @@
 title: Working a big issue with Claude — where does the context live?
 date: 2026-09-03
 order: 7
-summary: A parent issue with eight sub-issues doesn't fit in one session. Should findings go into GitHub issues, or into one long session that fans out subagents? After trying both, the answer is issues plus short sessions, with subagents kept on a very short leash.
+summary: An epic doesn't fit in one context window, so the memory has to live somewhere else. What the Claude Code docs actually recommend, checked against an epic of onboarding and demo-data work that grew seven sub-issues and needed two PRs.
 ---
 
-The hard part of a large issue isn't the code. It's that the work outlives any one context window. A parent issue with eight sub-issues means days of sessions, and everything Claude learned in session one is gone by session four unless it was written down somewhere Claude can read it back.
+The hard part of a large issue isn't the code. It's that the work outlives any one context window. The Claude Code docs put it bluntly: ["the context window is the most important resource to manage"](https://code.claude.com/docs/en/best-practices), and every session ["begins with a fresh context window"](https://code.claude.com/docs/en/memory). Whatever Claude learned in session one is gone by session four unless it was written somewhere Claude reads back.
 
-There are two obvious places to put that memory: **GitHub issues**, or **one long session that delegates to subagents**. I've tried both.
+I've tried three places to keep that memory. Two of them mostly failed, and the docs explain why.
 
-## The one-session-with-subagents approach
+## Attempt one: a coordinator session with subagents
 
-The pitch is attractive. Keep a single coordinating session, give each sub-issue to a subagent, let the coordinator hold the big picture. In practice it broke down for me in three ways:
+Keep one long session, hand each piece to a subagent, let the coordinator hold the big picture. It felt fragile in practice: subagents that misread the task still returned a plausible report, and I was debugging summaries instead of watching tool calls.
 
-- **Subagents fail quietly.** A subagent that misreads the task, hits a permission prompt nobody sees, or runs out of context returns a plausible-looking report. The coordinator takes it at face value. You only find out when you run the tests.
-- **Babysitting is harder, not easier.** With one session you watch one stream of tool calls and can interrupt. With five subagents you get five summaries after the fact, and the summaries are what you're now debugging.
-- **The coordinator's context fills anyway.** Every subagent report lands in the parent. Compaction eventually eats the early decisions, and the coordinator starts contradicting sub-issue three while working on sub-issue seven.
+The [subagents page](https://code.claude.com/docs/en/sub-agents) is clear that this isn't what they're for. A subagent "returns only the summary", and the docs say to stay in the main conversation when "multiple phases share significant context, such as planning, implementation, and testing". That's every sub-issue. The recommended uses are the opposite shape: parallel research, isolating verbose output like test runs and log files, and an adversarial review of a diff in a fresh context. Read-only work with a crisp question. "Implement step four" is not that.
 
-Subagents are good at one thing: scoped, read-only work with a crisp question. "Find every caller of this function and tell me which ones pass null" is a great subagent task. "Implement sub-issue 4" is not.
+## Attempt two: an epic with a sub-issue per step
 
-## The GitHub-issues approach
+The tracker-shaped version of the same idea. Break the epic into sub-issues, one session per sub-issue, let GitHub be the memory.
 
-The alternative is boring: make the issue tracker the memory.
+A recent epic of mine, onboarding and demo-data work for a multi-tenant product, went this way: a parent issue and seven sub-issues. Weeks later the score is three PRs, six sub-issues with zero comments, one still open after its PR merged, and one step that quietly stopped existing when the approach changed. Every finding that mattered landed in the parent, not in the child it belonged to. The whole thing would have been one or two PRs against the parent.
 
-- **One sub-issue per session.** Start clean, paste the sub-issue URL, let Claude read the parent and siblings with `gh issue view`. Context is small and on-topic.
-- **Findings go back into the issue, not the chat.** When Claude discovers that the migration needs a backfill, or that two sub-issues touch the same module, that becomes a comment on the issue. The next session reads it for free.
-- **Close with a written handoff.** Before the session ends, have Claude post what was done, what was left, and what surprised it. That comment is the prompt for tomorrow.
-- **The parent issue is the plan.** Keep a checklist there, tick items as PRs merge, and record decisions as comments. Claude reads it at the start of every session and the plan never drifts from reality.
+The docs never suggest sub-issues. They suggest a spec: have Claude interview you, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then "start a fresh session to execute it". The useful spec "names the files and interfaces involved, states what is out of scope, and ends with an end-to-end verification step". One document, not seven tickets.
 
-Everything Claude needs is now durable, versioned, and readable by humans too. If a session goes sideways you close the terminal and lose nothing.
+## What actually worked
 
-## What I actually do now
+The parent issue as that spec, kept alive. Three tables Claude updates every session:
 
-- Break the parent issue down myself, or with Claude in a planning session that produces sub-issues and nothing else.
-- One session per sub-issue, one PR per session. Small enough that compaction rarely triggers.
-- Subagents only for parallel read-only exploration inside a session, never for implementation.
-- Every session ends with a comment on the issue. No comment, the session didn't happen.
-- Repo-level conventions live in `CLAUDE.md`. Issue-level state lives in the issue. Nothing important lives only in a chat transcript.
+- **Steps**, with a state column and a link to the PR that closed each one.
+- **Decisions worth not relitigating**, each with a one-line why.
+- **Findings that constrain the rest.** Things discovered mid-implementation that change later steps.
 
-## The lesson
+A fresh session reads that one issue and has everything. This matches what the docs say survives and what doesn't: an instruction "given only in conversation" disappears after compaction, and CLAUDE.md should exclude ["information that changes frequently"](https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md). Epic state is exactly that. It belongs in the issue, not the transcript and not the repo config.
 
-Context has to live somewhere that survives the session, and a chat window isn't it. GitHub issues already are that place; the tracker was designed for exactly this kind of long-running, multi-person state. Treat Claude as one more person on the issue who reads the thread before starting and writes to it before leaving, and the "how do I keep context" problem mostly disappears.
+## The rule I landed on
+
+Keep the work items small and keep a human on every PR. Never hand Claude an entire epic and come back later. The docs' framing is the "trust-then-verify gap": Claude "produces a plausible-looking implementation that doesn't handle edge cases", and "the longer Claude works unattended, the more an independent check matters". The unit of delegation is one PR you'll actually read, with a check Claude can run itself.
+
+Between PRs:
+
+- One parent issue per epic. Sub-issues only when someone else picks the piece up independently.
+- Each session starts by reading the parent and ends by updating its tables.
+- Decisions and findings go into the issue the moment they're made.
+- Subagents for research and for reviewing the diff in a fresh context. Not for implementing.
+- `/clear` between pieces. The docs are direct: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections."
+- Repo conventions in `CLAUDE.md`. Epic state in the issue. Nothing important only in a transcript.
+
+Context has to live somewhere that survives the session. Neither a coordinator's chat window nor a pile of sub-issues is that place. One issue that Claude reads before starting and writes to before leaving is.
