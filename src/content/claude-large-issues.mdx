@@ -33,7 +33,7 @@ The parent issue as that spec, kept alive. Three tables Claude updates every ses
 - **Decisions worth not relitigating**, each with a one-line why.
 - **Findings that constrain the rest.** Things discovered mid-implementation that change later steps.
 
-A fresh session reads that one issue and has everything. This matches what the docs say survives and what doesn't: an instruction "given only in conversation" disappears after compaction, and CLAUDE.md should exclude ["information that changes frequently"](https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md). Epic state is exactly that. It belongs in the issue, not the transcript and not the repo config.
+A fresh session reads that one issue and has everything. The catch is who writes to it, and when. A long session that has been corrected three times is full of abandoned approaches, and if it updates the issue at the end, those leak into the record as decisions. The next session reads them as truth and builds on them. That's how one messy context becomes a pile of messy issues. So the tables get updated from a short, clean session, or by hand, never as the last act of a sprawling one. The same goes for follow-up issues: don't let a tired session file them. This matches what the docs say survives and what doesn't: an instruction "given only in conversation" disappears after compaction, and CLAUDE.md should exclude ["information that changes frequently"](https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md). Epic state is exactly that. It belongs in the issue, not the transcript and not the repo config.
 
 ## The rule I landed on
 
@@ -41,11 +41,11 @@ Keep the work items small and keep a human on every PR. Never hand Claude an ent
 
 Between PRs:
 
+- `/clear` is the default, not the exception. Between pieces, and after the second correction on the same problem. The docs are direct: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections."
 - One parent issue per epic. Sub-issues only when someone else picks the piece up independently.
-- Each session starts by reading the parent and ends by updating its tables.
-- Decisions and findings go into the issue the moment they're made.
+- Each session starts by reading the parent. Its tables get updated from a clean session or by hand.
+- Nothing writes to the tracker from a polluted context. No issue edits, no follow-up issues. If the session went sideways, clear it, and record only what you'd repeat to a colleague.
 - Subagents for research and for reviewing the diff in a fresh context. Not for implementing.
-- `/clear` between pieces. The docs are direct: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections."
 - Repo conventions in `CLAUDE.md`. Epic state in the issue. Nothing important only in a transcript.
 
 Context has to live somewhere that survives the session. Neither a coordinator's chat window nor a pile of sub-issues is that place. One issue that Claude reads before starting and writes to before leaving is.
