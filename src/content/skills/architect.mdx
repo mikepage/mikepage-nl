@@ -1,0 +1,64 @@
+---
+description: Turn a concept, epic, feature idea, or messy GitHub issue into code structure instead of documentation — a skeleton of types, modules, and failing tests, plus one short plan, delivered as tooling PRs first and the feature in one PR. Use whenever the user asks to plan, break down, structure, scope, or "think through" a feature or epic, hands over a parent issue with sub-issues, asks how something should be built, or starts anything that would normally produce sub-issues, long PR descriptions, or findings comments. Also use when about to write an issue comment, a follow-up issue, or a PR body longer than a paragraph, to check whether that text should be code instead.
+post: claude-large-issues
+postTitle: Working a big issue with Claude — where does the context live?
+order: 6
+---
+
+# Architect: concepts into code, not prose
+
+The record of a feature is its code. A reader who knows the codebase understands a feature faster from the diff than from the issues, PR bodies, and comments written about it. Text about code also decays: it is written from one session's context, read by the next session as truth, and never checked by a compiler or a test. So the goal here is to leave behind structure that is verified by the tools, and as little text as possible.
+
+The rule that decides everything below: **what is implemented logically, using the codebase's established patterns, does not need to be explained.** Explain only the surprise.
+
+## Read code before tracker
+
+Start from the codebase, not the issue thread. Read the feature directories the work touches, the nearest existing feature that does something similar, and any repo skill that describes the pattern. Read the parent issue once for intent and constraints. Skip sub-issue threads and old PR bodies unless a specific constraint is missing; they are one earlier session's context, at that session's volume, and rereading them reproduces its confusion.
+
+Identify the established pattern. Most repos have a reference implementation for a feature, a route, a migration, a component. If one exists, the new work follows it and the plan says only "follows `features/redirect/`". If none exists, that is the first real decision, and the only one worth a sentence.
+
+## Reshape the work into structure
+
+Express the plan as code the tools can check:
+
+- **Types and schemas first.** Interfaces, zod schemas, database schema changes, function signatures. A well-named type replaces a paragraph of description and fails the build when violated.
+- **Module skeleton.** The directories and files the pattern prescribes, with empty or throwing bodies. The shape of the feature is visible in the tree before any logic exists.
+- **Failing tests as acceptance criteria.** One test per behaviour the issue asks for, named after the behaviour. This is the spec: it names the files and interfaces involved and ends in an end-to-end check, which is what the Claude Code docs ask a spec to do. It also gives every later session a check it can run instead of a description it has to trust.
+- **Names carry the decision.** `demoImageKey(category, sha)` documents the "category in the key" decision better than a table row does.
+
+Merge or drop steps here. A step that turns out to be one line of config, or that disappears when the approach changes, never becomes a ticket.
+
+## Tools first, then the feature in one PR
+
+Order the slices so that everything the feature needs but is not the feature lands first: utilities, scripts, schema changes, bindings, a client for an external service, test fixtures. Each of those is small, has no business meaning, and can be reviewed as "does this tool work". Then the feature itself goes in as one PR of pure business logic on top of tools that already exist.
+
+Mixing the two is what makes epics unreviewable. A PR that adds an R2 sync helper, a manifest schema, and the onboarding behaviour that uses them forces the reviewer to hold three unrelated questions at once, and a bug in the helper hides behind a discussion about the behaviour. Separated, the tooling PRs are boring and merge fast, and the feature PR reads as one idea. Two or three PRs for an epic is the normal outcome: one or two of tools, one of feature.
+
+## One short plan, then delete it
+
+Write one plan file next to the work. Keep it under forty lines: the slices in order, the decisions that were not obvious with a one-line why, and the open questions for the human. It exists so a fresh session can start without rereading the tracker, and so the human can answer scope questions in one place.
+
+Do not let it grow. Anything worth keeping after the epic ships moves into code, a test, or `CLAUDE.md` if it is a stable convention. Delete the plan in the final PR. A plan that survives becomes documentation, and documentation about code drifts.
+
+## What not to write
+
+- **Sub-issues.** Only when a different person will pick the piece up independently. Splitting work for Claude's own benefit multiplies the places state can drift.
+- **Findings comments and follow-up issues from a working session.** A session that has been corrected is full of abandoned approaches. If it records them, the next session reads them as decisions. A finding that matters becomes a test, a type, or a comment at the exact line where the surprise lives. If it truly needs the human, it goes in the plan file's open questions.
+- **"What changed" sections in PR bodies.** The diff shows what changed. The PR body is one paragraph: what the slice does and one line on how to verify. If verification is "run the tests", say nothing.
+- **"Not changed, deliberately" sections.** If something was left alone on purpose and that matters, a one-line comment at the place a future reader would try to change it. Otherwise nothing.
+- **Comments that describe code.** Comments are for the constraint the reader cannot see: the bucket needs a jurisdiction flag or reports missing, the GC sweeps everything under this prefix. Never for what the next three lines do.
+- **Verify steps that restate the test suite.** The tests are the verification.
+
+## When the human is needed
+
+Scope decisions, which slices to merge, and anything the issue leaves genuinely open belong to the human. Ask once, in the plan file, before implementing. Do not ask through issue comments, and do not decide by producing output; a gap filled with code is harder to see than a gap left as a question.
+
+## Working with repo skills that ask for more
+
+Repos often carry skills for creating issues, implementing issues, and opening PRs that ask for labels, templates, and structured bodies. Follow their mechanics: branch rules, labels, base branch, worktree. Where they ask for documentation volume, this skill wins: the body stays a paragraph and no sub-issues are opened. The house rules are about process safety; the volume was never the point.
+
+## Example
+
+**Input:** a parent issue "curated demo image set per organization category" with seven sub-issues: manifest format, import, curate, pool script, copy into new org, onboarding uses them, generated site uses them.
+
+**Output:** a plan file with two slices. Slice one, tooling: `demo-data/manifest.ts` schema with a failing round-trip test, the pool and mirror script following the repo's existing scripts, and `copyDemoImages(category, organizationId)` with a failing test that a target organization ends up with the category's images. No business behaviour changes yet. Slice two, feature: onboarding and the generated site call `copyDemoImages`, one test each. "Curate" is dropped: the collected set is the set, recorded as a one-line comment in the collector. Two PRs, each body one paragraph. Zero sub-issues touched, zero findings comments. The decision that pool keys hash bytes rather than URLs lives as the name `sha256` in the key type and one comment where the hash is computed.
