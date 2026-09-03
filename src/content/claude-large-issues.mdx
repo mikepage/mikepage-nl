@@ -92,3 +92,11 @@ Everything written about the code should stay smaller than the code. The [archit
 5. **Close out.** Delete the plan file. Move any convention worth keeping into `CLAUDE.md`. No sub-issues touched, no findings comments, no follow-ups filed.
 
 Each step runs in its own clean session. What the human needs to know is in the diff and the one paragraph on each PR.
+
+## The one rule that went into CLAUDE.md
+
+Skills load when they trigger. One rule from this post was worth loading in every session, so it lives in the global `~/.claude/CLAUDE.md` and applies to every repo:
+
+> Never create GitHub sub-issues, and never treat sub-issues as tasks for subagents. A sub-issue is tracker bookkeeping, not a unit of work: handing one to a subagent returns a summary that hides whether the task was understood, and the coordinator cannot tell a misread from a correct one. Subagents do research and review a diff in a fresh context; they do not implement. Work is split into PRs, not issues, each implemented in the main session and read by a human before the next one starts. If a step needs a home, it goes in the plan file (see the architect skill). Open a separate issue only when the user explicitly asks for one or a different person will pick it up.
+
+It carries its reason, which the docs say matters more than emphasis. Nothing in it is a product fact; it is a statement about where work is allowed to live.
