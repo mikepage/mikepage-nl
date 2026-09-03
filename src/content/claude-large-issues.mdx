@@ -2,64 +2,29 @@
 title: Working a big issue with Claude — where does the context live?
 date: 2026-09-03
 order: 7
-summary: An epic doesn't fit in one context window, so the memory has to live somewhere else. What the Claude Code docs actually recommend, checked against an epic of onboarding and demo-data work that grew seven sub-issues and needed two PRs.
+summary: An epic doesn't fit in one context window. What the Claude Code docs recommend, checked against a test where an epic of onboarding and demo-data work was run mostly autonomously and grew seven sub-issues for two PRs' worth of change.
 ---
 
-The hard part of a large issue isn't the code. It's that the work outlives any one context window. The Claude Code docs put it bluntly: ["the context window is the most important resource to manage"](https://code.claude.com/docs/en/best-practices), and every session ["begins with a fresh context window"](https://code.claude.com/docs/en/memory). Whatever Claude learned in session one is gone by session four unless it was written somewhere Claude reads back.
+The hard part of a large issue isn't the code. It's that the work outlives any one context window. The docs call the context window ["the most important resource to manage"](https://code.claude.com/docs/en/best-practices), and every session ["begins with a fresh context window"](https://code.claude.com/docs/en/memory). Whatever Claude learned in session one is gone by session four unless it was written somewhere Claude reads back.
 
-I tested this deliberately. The epic below was handed to Claude Fable 5.1 as a long-running, mostly autonomous task, to see how far the current top model gets on its own across many sessions. The code shipped. The process didn't hold: the plan drifted, bookkeeping piled up, and small decisions grew ceremony. For this kind of work, autonomous long-running failed. What follows is what the docs recommend instead, checked against that experience.
+I tested this deliberately. An epic of onboarding and demo-data work was handed to Claude Fable 5.1 as a long-running, mostly autonomous task. The code shipped. The process didn't hold: the plan drifted, bookkeeping piled up, and small decisions grew ceremony. Autonomous long-running failed for this kind of work.
 
-## Attempt one: a coordinator session with subagents
+## What went wrong
 
-Keep one long session, hand each piece to a subagent, let the coordinator hold the big picture. It felt fragile in practice: subagents that misread the task still returned a plausible report, and I was debugging summaries instead of watching tool calls.
+**A coordinator with subagents.** One long session delegating each piece. Subagents that misread the task still returned a plausible report, and I ended up debugging summaries instead of watching work. The [docs](https://code.claude.com/docs/en/sub-agents) agree: a subagent "returns only the summary", and the main conversation should own anything where "multiple phases share significant context, such as planning, implementation, and testing". Subagents are for research and for reviewing a diff in a fresh context, not for implementing.
 
-The [subagents page](https://code.claude.com/docs/en/sub-agents) is clear that this isn't what they're for. A subagent "returns only the summary", and the docs say to stay in the main conversation when "multiple phases share significant context, such as planning, implementation, and testing". That's every sub-issue. The recommended uses are the opposite shape: parallel research, isolating verbose output like test runs and log files, and an adversarial review of a diff in a fresh context. Read-only work with a crisp question. "Implement step four" is not that.
+**An epic with a sub-issue per step.** Seven sub-issues. Weeks later: three PRs, six sub-issues with zero comments, one still open after its PR merged, and one step that stopped existing when the approach changed. The smallest step began as "curate the images", was rewritten twice as the answer became "the collected set is the curated set", and shipped as a note field swapped in a JSON manifest plus two lines elsewhere. One commit's worth of change, delivered with a rewritten issue, a full PR body, and a review cycle. Every finding that mattered landed in the parent issue anyway. The docs never suggest sub-issues; they suggest one spec, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then a fresh session to execute it.
 
-## Attempt two: an epic with a sub-issue per step
+## What worked
 
-The tracker-shaped version of the same idea. Break the epic into sub-issues, one session per sub-issue, let GitHub be the memory.
+The parent issue as that spec, kept alive with three tables: **steps** with state and PR link, **decisions worth not relitigating** with a one-line why, and **findings that constrain the rest**. A fresh session reads that one issue and has everything. It belongs there and not in `CLAUDE.md`, which should exclude ["information that changes frequently"](https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md), and not in the transcript, which compaction eats.
 
-A recent epic of mine, onboarding and demo-data work for a multi-tenant product, went this way: a parent issue and seven sub-issues. Weeks later the score is three PRs, six sub-issues with zero comments, one still open after its PR merged, and one step that quietly stopped existing when the approach changed. Every finding that mattered landed in the parent, not in the child it belonged to. The whole thing would have been one or two PRs against the parent.
+## How Claude differs from a human, and what follows
 
-The smallest step shows the cost best. It began as "curate which images belong per category". After the images were collected the answer turned out to be that the collected set *is* the curated set, so the sub-issue was rewritten to say so. Then it was rewritten again as the wording settled. What finally shipped was a note field swapped on every entry of a JSON manifest, a sentence in a README, and a log line in a script. One commit's worth of change. It arrived with a rewritten issue, a PR body with verify steps and a "not changed, deliberately" section, and a review cycle. All of that ceremony was Claude being thorough about a decision that took a sentence to make.
+**A human remembers across weeks. Claude forgets at the end of every session, and a long session degrades before it ends.** The docs: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections." So memory lives in the issue, `/clear` is the default between pieces and after the second correction, and work is split only when a different person will pick the piece up.
 
-The docs never suggest sub-issues. They suggest a spec: have Claude interview you, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then "start a fresh session to execute it". The useful spec "names the files and interfaces involved, states what is out of scope, and ends with an end-to-end verification step". One document, not seven tickets.
+**A human who is tired slows down and says so. Claude keeps producing at the same confidence.** That is the docs' "trust-then-verify gap": a "plausible-looking implementation that doesn't handle edge cases". Under bypass permissions Claude doesn't plan at all in my sessions, it starts editing. Productive on a bounded fix, and on an epic exactly where the slop comes from. So the unit of delegation is one PR you'll actually read with a check Claude can run, and nothing writes to the tracker from a polluted context. A tired session recording its decisions is how one messy context becomes a pile of messy issues.
 
-## What actually worked
+**A human fills gaps in a ticket with judgment. Claude fills them with output.** So the judgment happens first, in a plan. The docs' order is ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), and planning matters most when the approach is uncertain, many files change, or the code is unfamiliar. An epic is all three. Start in plan mode, implement in auto mode. Plan mode is never triggered for you, and under bypass its edit block [isn't enforced](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode). One planning session would have cut most of the ceremony above to one spec and two PRs.
 
-The parent issue as that spec, kept alive. Three tables Claude updates every session:
-
-- **Steps**, with a state column and a link to the PR that closed each one.
-- **Decisions worth not relitigating**, each with a one-line why.
-- **Findings that constrain the rest.** Things discovered mid-implementation that change later steps.
-
-A fresh session reads that one issue and has everything. The catch is who writes to it, and when. A long session that has been corrected three times is full of abandoned approaches, and if it updates the issue at the end, those leak into the record as decisions. The next session reads them as truth and builds on them. That's how one messy context becomes a pile of messy issues. So the tables get updated from a short, clean session, or by hand, never as the last act of a sprawling one. The same goes for follow-up issues: don't let a tired session file them. This matches what the docs say survives and what doesn't: an instruction "given only in conversation" disappears after compaction, and CLAUDE.md should exclude ["information that changes frequently"](https://code.claude.com/docs/en/best-practices#write-an-effective-claude-md). Epic state is exactly that. It belongs in the issue, not the transcript and not the repo config.
-
-## Three differences from a human colleague
-
-Every rule I ended up with comes down to one of three ways Claude is not the colleague you'd normally hand an epic to.
-
-### A colleague remembers. Claude forgets, and a long session makes it worse
-
-A person carries the epic in their head for weeks. Claude's memory ends with the session, and the docs are blunt that performance degrades as the window fills: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections." So the memory has to live outside the session, and clearing is the default rather than the exception.
-
-- One parent issue per epic, read at the start of every session. Repo conventions in `CLAUDE.md`, epic state in the issue, nothing important only in a transcript.
-- `/clear` between pieces and after the second correction on the same problem.
-- Sub-issues only when a different person picks the piece up. Splitting work for Claude's benefit just multiplies the places its state can drift.
-
-### A colleague gets tired and says so. Claude gets tired and keeps producing
-
-A person corrected three times slows down, asks, or stops for the day. Claude keeps going at the same confidence, and its output at that point is what the docs call the "trust-then-verify gap": a "plausible-looking implementation that doesn't handle edge cases". Under bypass permissions it doesn't plan at all in my sessions, it starts editing, and on an epic that is exactly where the slop comes from: no plan, no gate, and a model that produces until it looks done. That same setting was the most productive one for bounded fixes, which is the trap.
-
-- The unit of delegation is one PR you'll actually read, with a check Claude can run itself. Never hand over an epic and come back later.
-- Nothing writes to the tracker from a polluted context. No issue edits, no follow-up issues. A tired session recording its decisions is how one messy context becomes a pile of messy issues. Update the parent from a clean session or by hand.
-
-### A colleague fills gaps with judgment. Claude fills gaps with output
-
-Give a person a vague ticket and they ask, or decide, or push back. Give Claude one and it produces something that satisfies the words. So the judgment has to happen before the work, in a plan. The docs' workflow is ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), and planning matters most "when you're uncertain about the approach, when the change modifies multiple files, or when you're unfamiliar with the code". An epic is all three.
-
-- Start epic-shaped work in plan mode, then implement in auto mode. Plan mode is never triggered for you: `Shift+Tab`, `/plan`, or `--permission-mode plan`. Under bypass its edit block [isn't enforced](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode), so the plan is a suggestion.
-- The plan is where steps get merged or dropped before they become tickets, and where the verification is decided before code exists. Most of the ceremony above would have been cut by one planning session producing one spec and two PRs.
-- Subagents are more forgetful workers who report back a summary. Use them for research and for reviewing the diff in a fresh context. Not for implementing.
-
-Context has to live somewhere that survives the session. Neither a coordinator's chat window nor a pile of sub-issues is that place. One issue that Claude reads before starting, and that only a clear head writes to, is.
+Context has to live somewhere that survives the session. One issue that Claude reads before starting, and that only a clear head writes to, is that place.
