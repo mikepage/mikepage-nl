@@ -7,12 +7,6 @@ npm install
 npm run dev
 ```
 
-## Deploy
-
-```txt
-npm run deploy
-```
-
 ## Type generation
 
 [For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
