@@ -22,7 +22,7 @@ Identify the established pattern. Most repos have a reference implementation for
 Express the plan as code the tools can check:
 
 - **Types and schemas first.** Interfaces, zod schemas, database schema changes, function signatures. A well-named type replaces a paragraph of description and fails the build when violated.
-- **Module skeleton.** The directories and files the pattern prescribes, with empty or throwing bodies. The shape of the feature is visible in the tree before any logic exists.
+- **Module skeleton.** The directories and files the pattern prescribes, so the shape of the feature is visible in the tree. Stubs are a planning device, not a deliverable: nothing merges with throwing bodies or half-finished implementations. The first PR completes whatever skeleton it opens.
 - **Failing tests as acceptance criteria.** One test per behaviour the issue asks for, named after the behaviour. This is the spec: it names the files and interfaces involved and ends in an end-to-end check, which is what the Claude Code docs ask a spec to do. It also gives every later session a check it can run instead of a description it has to trust.
 - **Names carry the decision.** `demoImageKey(category, sha)` documents the "category in the key" decision better than a table row does.
 
@@ -30,7 +30,7 @@ Merge or drop steps here. A step that turns out to be one line of config, or tha
 
 ## Tools first, then the feature in one PR
 
-Order the slices so that everything the feature needs but is not the feature lands first: utilities, scripts, schema changes, bindings, a client for an external service, test fixtures. Each of those is small, has no business meaning, and can be reviewed as "does this tool work". Then the feature itself goes in as one PR of pure business logic on top of tools that already exist.
+Order the slices so that everything the feature needs but is not the feature lands first: utilities, scripts, schema changes, bindings, a client for an external service, test fixtures. Each of those is small, has no business meaning, and can be reviewed as "does this tool work". Then the feature itself goes in as one PR of pure business logic on top of tools that already exist. Only tools the feature demonstrably needs qualify. A helper for a one-time operation, or an abstraction for a requirement nobody has yet, is over-engineering with a PR of its own, not tooling.
 
 Mixing the two is what makes epics unreviewable. A PR that adds an R2 sync helper, a manifest schema, and the onboarding behaviour that uses them forces the reviewer to hold three unrelated questions at once, and a bug in the helper hides behind a discussion about the behaviour. Separated, the tooling PRs are boring and merge fast, and the feature PR reads as one idea. Two or three PRs for an epic is the normal outcome: one or two of tools, one of feature.
 
@@ -48,6 +48,9 @@ Do not let it grow. Anything worth keeping after the epic ships moves into code,
 - **"Not changed, deliberately" sections.** If something was left alone on purpose and that matters, a one-line comment at the place a future reader would try to change it. Otherwise nothing.
 - **Comments that describe code.** Comments are for the constraint the reader cannot see: the bucket needs a jurisdiction flag or reports missing, the GC sweeps everything under this prefix. Never for what the next three lines do.
 - **Verify steps that restate the test suite.** The tests are the verification.
+- **Extra tests.** One focused test per stated behaviour, sized like the neighbouring test files. Scratch checks used while working are not turned into permanent test files.
+
+Most of this list is one instruction seen from six angles: leave out what does not change what the reader would do next. Current models follow that single sentence well; the list is here so the angles are recognisable, not so each is enforced separately.
 
 ## When the human is needed
 
