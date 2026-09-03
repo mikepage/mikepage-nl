@@ -33,11 +33,11 @@ The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) say the same:
 
 The setup: the epic split into seven sub-issues, one session per sub-issue, GitHub as the memory.
 
-The result after two days: four PRs merged and six of the seven sub-issues closed. Five of the seven never received a single comment. One step was rewritten twice before it shrank to a one-commit change.
+The result after two days: the work shipped in four PRs. The seven sub-issues added nothing to that. Nobody read them, nothing was decided in them, and one of them was rewritten twice before it shrank to a one-commit change.
 
 The overhead was the problem. That one-commit step arrived with a rewritten issue, a full PR description, and a review round. The same happened, at smaller scale, on every step.
 
-Meanwhile every finding that mattered was written into the parent issue, not into the sub-issue it belonged to. The sub-issues held no memory. They were bookkeeping that Claude maintained and nobody read.
+Every finding that mattered was written into the parent issue, not into the sub-issue it belonged to. The sub-issues were bookkeeping that Claude maintained for its own benefit, and the four PRs would have shipped the same without them.
 
 The docs never suggest sub-issues. They suggest one spec, ["write a complete spec to SPEC.md"](https://code.claude.com/docs/en/best-practices#let-claude-interview-you), then a fresh session to execute it.
 
