@@ -50,6 +50,16 @@ Three things stay out of the tracker on purpose. Sub-issues are opened only when
 
 Scope decisions, which slices to merge, and anything the issue leaves genuinely open belong to the human. Ask once, in the plan file, before implementing. Do not ask through issue comments, and do not decide by producing output; a gap filled with code is harder to see than a gap left as a question.
 
+## Sessions, modes, and subagents
+
+Each slice is its own session, started clean with the plan file and the code as the only context. A session that has been corrected twice on the same problem is cleared and restarted from the plan rather than pushed on; its abandoned approaches must not reach the plan or the tracker.
+
+Planning happens in plan mode and ends the turn with the plan file for the human to approve. Implementation runs in auto mode. Bypass permissions skips planning altogether and is not used for epic-shaped work.
+
+Every PR waits for a human to read and merge it before the next slice starts. The feature PR depends on merged tools, so the order enforces this on its own; the point is that nobody hands over an epic and comes back at the end.
+
+Subagents do research and review a diff in a fresh context. They do not implement slices: a subagent returns only a summary, and a summary of a misread task is indistinguishable from a summary of a correct one.
+
 ## How a run goes
 
 The order matters, so this part is numbered.
