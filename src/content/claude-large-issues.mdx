@@ -83,4 +83,12 @@ Mixing the two is what made the epic unreviewable: a helper, a schema and a beha
 
 Context has to live somewhere that survives the session, and for a human that place turned out to be the diff. Keep the plan short, keep the PRs small, and let the code be the record.
 
-Everything written about the code should stay smaller than the code. The [architect skill](/skills/architect) that accompanies this post is the attempt to make Claude work that way by default.
+Everything written about the code should stay smaller than the code. The [architect skill](/skills/architect) that accompanies this post is the attempt to make Claude work that way by default. When it triggers, a run goes like this:
+
+1. **Read the code first.** The directories the work touches, the nearest similar feature, the repo's own skills. Read the parent issue once for intent. Name the pattern to follow.
+2. **Write one plan file.** Readable in a minute: slices in order with tooling before feature, non-obvious decisions with a one-line why, open questions for the human. End the turn there if an open question changes the shape of the work.
+3. **Open the tooling PR.** Types, schema, scripts, clients, one test per behaviour. No stubs merged. One-paragraph body. A human reads and merges it.
+4. **Open the feature PR.** Business logic on the merged tools, one test per behaviour. Anything discovered becomes a test, a type, or a comment at the line.
+5. **Close out.** Delete the plan file. Move any convention worth keeping into `CLAUDE.md`. No sub-issues touched, no findings comments, no follow-ups filed.
+
+Each step runs in its own clean session. What the human needs to know is in the diff and the one paragraph on each PR.
