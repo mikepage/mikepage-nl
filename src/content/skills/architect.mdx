@@ -1,5 +1,5 @@
 ---
-description: Turn a concept, epic, feature idea, or messy GitHub issue into code structure instead of documentation — a skeleton of types, modules, and failing tests, plus one short plan, delivered as tooling PRs first and the feature in one PR. Use whenever the user asks to plan, break down, structure, scope, or "think through" a feature or epic, hands over a parent issue with sub-issues, asks how something should be built, or starts anything that would normally produce sub-issues, long PR descriptions, or findings comments. Also use when about to write an issue comment, a follow-up issue, or a PR body longer than a paragraph, to check whether that text should be code instead.
+description: Turn a concept, epic, or messy GitHub issue into code structure instead of documentation — types, tests, and one short plan, shipped as tooling PRs then one feature PR. Use for any planning or scoping of multi-step work, for a parent issue with sub-issues, and before writing prose about code (issue comments, follow-up issues, PR bodies) to check whether that text should be code.
 post: claude-large-issues
 postTitle: Architect — concepts into code, not prose
 order: 6
@@ -23,7 +23,7 @@ Express the plan as code the tools can check:
 
 - **Types and schemas first.** Interfaces, zod schemas, database schema changes, function signatures. A well-named type replaces a paragraph of description and fails the build when violated.
 - **Module skeleton.** The directories and files the pattern prescribes, so the shape of the feature is visible in the tree. Stubs are a planning device, not a deliverable: nothing merges with throwing bodies or half-finished implementations. The first PR completes whatever skeleton it opens.
-- **Failing tests as acceptance criteria.** One test per behaviour the issue asks for, named after the behaviour. This is the spec: it names the files and interfaces involved and ends in an end-to-end check, which is what the Claude Code docs ask a spec to do. It also gives every later session a check it can run instead of a description it has to trust.
+- **Failing tests as acceptance criteria.** One test per behaviour the issue asks for, named after the behaviour. This is the spec: it names the files and interfaces involved and ends in an end-to-end check. It also gives every later session a check it can run instead of a description it has to trust.
 - **Names carry the decision.** `demoImageKey(category, sha)` documents the "category in the key" decision better than a table row does.
 
 Merge or drop steps here. A step that turns out to be one line of config, or that disappears when the approach changes, never becomes a ticket.
@@ -36,21 +36,15 @@ Mixing the two is what makes epics unreviewable. A PR that adds an R2 sync helpe
 
 ## One short plan, then delete it
 
-Write one plan file next to the work. Keep it under forty lines: the slices in order, the decisions that were not obvious with a one-line why, and the open questions for the human. It exists so a fresh session can start without rereading the tracker, and so the human can answer scope questions in one place.
+Write one plan file next to the work, short enough to read in a minute: the slices in order, the decisions that were not obvious with a one-line why, and the open questions for the human. It exists so a fresh session can start without rereading the tracker, and so the human can answer scope questions in one place.
 
 Do not let it grow. Anything worth keeping after the epic ships moves into code, a test, or `CLAUDE.md` if it is a stable convention. Delete the plan in the final PR. A plan that survives becomes documentation, and documentation about code drifts.
 
-## What not to write
+## What the text around the code must earn
 
-- **Sub-issues.** Only when a different person will pick the piece up independently. Splitting work for Claude's own benefit multiplies the places state can drift.
-- **Findings comments and follow-up issues from a working session.** A session that has been corrected is full of abandoned approaches. If it records them, the next session reads them as decisions. A finding that matters becomes a test, a type, or a comment at the exact line where the surprise lives. If it truly needs the human, it goes in the plan file's open questions.
-- **"What changed" sections in PR bodies.** The diff shows what changed. The PR body is one paragraph: what the slice does and one line on how to verify. If verification is "run the tests", say nothing.
-- **"Not changed, deliberately" sections.** If something was left alone on purpose and that matters, a one-line comment at the place a future reader would try to change it. Otherwise nothing.
-- **Comments that describe code.** Comments are for the constraint the reader cannot see: the bucket needs a jurisdiction flag or reports missing, the GC sweeps everything under this prefix. Never for what the next three lines do.
-- **Verify steps that restate the test suite.** The tests are the verification.
-- **Extra tests.** One focused test per stated behaviour, sized like the neighbouring test files. Scratch checks used while working are not turned into permanent test files.
+Every sentence written about the code, in a PR body, a comment, or an issue, is there because it changes what the reader would do next. The diff already shows what changed, and the tests already show it works, so a PR body is one paragraph on what the slice does. A code comment records the constraint the reader cannot see from the code, such as an external flag a call requires or a sweep that would delete unreferenced objects. A decision that was made on purpose lives as a one-line comment at the place a future reader would try to undo it.
 
-Most of this list is one instruction seen from six angles: leave out what does not change what the reader would do next. Current models follow that single sentence well; the list is here so the angles are recognisable, not so each is enforced separately.
+Three things stay out of the tracker on purpose. Sub-issues are opened only when a different person will pick the piece up independently, because splitting work for Claude's own benefit multiplies the places state can drift. Findings comments and follow-up issues are not written from a working session: a session that has been corrected is full of abandoned approaches, and the next session would read them as decisions. What matters becomes a test, a type, or a comment at the line where the surprise lives; what needs the human goes in the plan file's open questions. Tests are one focused test per stated behaviour, sized like the neighbouring test files, and scratch checks used while working are not promoted to permanent tests.
 
 ## When the human is needed
 
@@ -60,8 +54,6 @@ Scope decisions, which slices to merge, and anything the issue leaves genuinely 
 
 Repos often carry skills for creating issues, implementing issues, and opening PRs that ask for labels, templates, and structured bodies. Follow their mechanics: branch rules, labels, base branch, worktree. Where they ask for documentation volume, this skill wins: the body stays a paragraph and no sub-issues are opened. The house rules are about process safety; the volume was never the point.
 
-## Example
+## An illustration, not a template
 
-**Input:** a parent issue "curated demo image set per organization category" with seven sub-issues: manifest format, import, curate, pool script, copy into new org, onboarding uses them, generated site uses them.
-
-**Output:** a plan file with two slices. Slice one, tooling: `demo-data/manifest.ts` schema with a failing round-trip test, the pool and mirror script following the repo's existing scripts, and `copyDemoImages(category, organizationId)` with a failing test that a target organization ends up with the category's images. No business behaviour changes yet. Slice two, feature: onboarding and the generated site call `copyDemoImages`, one test each. "Curate" is dropped: the collected set is the set, recorded as a one-line comment in the collector. Two PRs, each body one paragraph. Zero sub-issues touched, zero findings comments. The decision that pool keys hash bytes rather than URLs lives as the name `sha256` in the key type and one comment where the hash is computed.
+A parent issue asks for a curated image set per customer category and has grown seven sub-issues: a manifest format, an import, a curation pass, a pooling script, copying a set into a new account, and two callers that use it. Reading the code first shows the repo already has a scripts pattern and a feature-directory pattern to follow. The plan becomes two slices. Tooling first: the manifest schema with a round-trip test, the pooling script in the existing scripts style, and a copy function with a test that a target account ends up with its category's images. Then the feature: the two callers, one test each. The curation step disappears because the collected set turns out to be the set, and that fact lives as one comment in the collector. Two PRs, each body one paragraph, no sub-issues touched, no findings comments. The shape of this outcome varies with the repo; what carries over is the order and the absence of prose.
