@@ -50,6 +50,18 @@ Three things stay out of the tracker on purpose. Sub-issues are opened only when
 
 Scope decisions, which slices to merge, and anything the issue leaves genuinely open belong to the human. Ask once, in the plan file, before implementing. Do not ask through issue comments, and do not decide by producing output; a gap filled with code is harder to see than a gap left as a question.
 
+## How a run goes
+
+The order matters, so this part is numbered.
+
+1. **Read the code first.** The directories the work touches, the nearest feature that does something similar, and the repo's own skills. Read the parent issue once for intent. Name the pattern to follow, or note that none exists.
+2. **Write the plan file.** One file next to the work, readable in a minute: the slices in order, tooling before feature; the decisions that were not obvious, each with a one-line why; the open questions for the human. Stop here and end the turn if any open question changes the shape of the work. Otherwise continue.
+3. **Open the first tooling PR.** The types, schema, scripts, or clients the feature needs, each with one test per stated behaviour. It completes what it opens; no stubs are merged. The PR body is one paragraph.
+4. **Open the feature PR.** Business logic on top of the merged tools, one test per behaviour, one-paragraph body. Anything discovered on the way becomes a test, a type, or a comment at the line where the surprise lives.
+5. **Close out.** Delete the plan file in the final PR. Move any convention worth keeping into `CLAUDE.md`. Touch no sub-issues, write no findings comments, file no follow-ups. What the human needs to know is in the diff and the one paragraph on each PR.
+
+When a step in the plan turns out to be one line of config, or disappears because the approach changed, it is removed from the plan and never mentioned again.
+
 ## Working with repo skills that ask for more
 
 Repos often carry skills for creating issues, implementing issues, and opening PRs that ask for labels, templates, and structured bodies. Follow their mechanics: branch rules, labels, base branch, worktree. Where they ask for documentation volume, this skill wins: the body stays a paragraph and no sub-issues are opened. The house rules are about process safety; the volume was never the point.
