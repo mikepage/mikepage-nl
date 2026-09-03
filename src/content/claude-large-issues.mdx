@@ -33,9 +33,9 @@ The [Claude Code docs](https://code.claude.com/docs/en/sub-agents) say the same:
 
 The setup: the epic split into seven sub-issues, one session per sub-issue, GitHub as the memory.
 
-The result after two days: three PRs merged. Six of the seven sub-issues had no comments at all. One was still open after its PR had merged. One step was dropped entirely when the approach changed.
+The result after two days: four PRs merged and six of the seven sub-issues closed. Five of the seven never received a single comment. One step was rewritten twice before it shrank to a one-commit change.
 
-The overhead was the problem. The smallest step ended up as one commit's worth of change, but it arrived with an issue that had been rewritten twice, a full PR description, and a review round. The same happened, at smaller scale, on every step.
+The overhead was the problem. That one-commit step arrived with a rewritten issue, a full PR description, and a review round. The same happened, at smaller scale, on every step.
 
 Meanwhile every finding that mattered was written into the parent issue, not into the sub-issue it belonged to. The sub-issues held no memory. They were bookkeeping that Claude maintained and nobody read.
 
