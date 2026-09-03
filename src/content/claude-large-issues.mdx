@@ -7,7 +7,7 @@ summary: An epic doesn't fit in one context window, so the memory has to live so
 
 The hard part of a large issue isn't the code. It's that the work outlives any one context window. The Claude Code docs put it bluntly: ["the context window is the most important resource to manage"](https://code.claude.com/docs/en/best-practices), and every session ["begins with a fresh context window"](https://code.claude.com/docs/en/memory). Whatever Claude learned in session one is gone by session four unless it was written somewhere Claude reads back.
 
-I've tried three places to keep that memory. Two of them mostly failed, and the docs explain why.
+I tested this deliberately. The epic below was handed to Claude Fable 5.1 as a long-running, mostly autonomous task, to see how far the current top model gets on its own across many sessions. The code shipped. The process didn't hold: the plan drifted, bookkeeping piled up, and small decisions grew ceremony. For this kind of work, autonomous long-running failed. What follows is what the docs recommend instead, checked against that experience.
 
 ## Attempt one: a coordinator session with subagents
 
@@ -37,7 +37,9 @@ A fresh session reads that one issue and has everything. The catch is who writes
 
 ## The rule I landed on
 
-Keep the work items small and keep a human on every PR. Never hand Claude an entire epic and come back later. The docs' framing is the "trust-then-verify gap": Claude "produces a plausible-looking implementation that doesn't handle edge cases", and "the longer Claude works unattended, the more an independent check matters". The unit of delegation is one PR you'll actually read, with a check Claude can run itself.
+Plan ahead, then keep the work items small and a human on every PR. The docs' workflow is ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), and planning "is most useful when you're uncertain about the approach, when the change modifies multiple files, or when you're unfamiliar with the code". An epic is all three. The plan is where steps get merged or dropped before they become sub-issues, and where the verification step is decided before any code exists. Most of the ceremony above would have been cut in a planning session that produced one spec and two PRs.
+
+Never hand Claude an entire epic and come back later. The docs' framing is the "trust-then-verify gap": Claude "produces a plausible-looking implementation that doesn't handle edge cases", and "the longer Claude works unattended, the more an independent check matters". The unit of delegation is one PR you'll actually read, with a check Claude can run itself.
 
 Between PRs:
 
