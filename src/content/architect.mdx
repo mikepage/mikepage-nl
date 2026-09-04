@@ -1,11 +1,13 @@
 ---
-title: Architect — concepts into code, not prose
+title: Architect — clear often, keep the record in the diff
 date: 2026-09-03
 order: 7
-summary: An epic doesn't fit in one context window. A test running onboarding and demo-data work mostly autonomously produced seven sub-issues and more prose than code, and the code turned out to be the only record worth reading.
+summary: An epic doesn't fit in one context window. A test running onboarding and demo-data work mostly autonomously produced seven sub-issues and more prose than code, and the answer turned out to be the cheapest one: put the record in the diff, then clear the context often.
 ---
 
 The hard part of a large issue isn't the code. It's that the work outlives any one context window. Every session ["begins with a fresh context window"](https://code.claude.com/docs/en/memory), so whatever Claude learned in session one is gone by session four unless it was written somewhere Claude reads back.
+
+The answer I ended up with is one line: `/clear` often, and make sure the code can carry what the context can't. Everything below is how I got there.
 
 I tested this deliberately. An epic of onboarding and demo-data work was handed to Claude Fable 5.1 as a long-running, mostly autonomous task. The code shipped. The process didn't.
 
@@ -25,7 +27,7 @@ The code is the only artifact both of us read the same way. Everything else — 
 
 ## What follows
 
-**Claude forgets at the end of every session**, and a long one degrades before it ends: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections." So the durable memory is the code plus one short plan, and `/clear` is the default between pieces.
+**Claude forgets at the end of every session**, and a long one degrades well before it ends: "a clean session with a better prompt almost always outperforms a long session with accumulated corrections." So don't defend the context, discard it. `/clear` between every piece and after the second correction, with the durable memory being the code plus one short plan.
 
 **Claude keeps producing at the same confidence** where a tired human slows down and says so. That's the docs' trust-then-verify gap, "a plausible-looking implementation that doesn't handle edge cases". So the unit of delegation is one PR you'll actually read, and nothing writes to the tracker from a polluted context.
 
@@ -33,9 +35,9 @@ The code is the only artifact both of us read the same way. Everything else — 
 
 ## The record is the diff
 
-Keep the plan short, keep the PRs small, and let the code be the record. Everything written about the code should stay smaller than the code.
+Clearing often is only cheap when nothing valuable is lost with the context, and that is the whole design: keep the plan short, keep the PRs small, and let the code be the record. Everything written about the code should stay smaller than the code.
 
-The [architect skill](/skills/architect) that accompanies this post makes Claude work that way by default, and for anything vague the companion [interview skill](/skills/interview) runs first, writing a self-contained `SPEC.md` for a fresh session. From there a run goes: read the code and the nearest similar feature, name the pattern to follow; write one plan file readable in a minute, slices in order, tooling before feature, open questions for the human; open the tooling PR, then the feature PR, each with one test per behaviour and a one-paragraph body; delete the plan file and move any convention worth keeping into `CLAUDE.md`. Each step in its own clean session. No sub-issues, no findings comments, no follow-ups filed.
+The [architect skill](/skills/architect) that accompanies this post makes Claude work that way by default, and for anything vague the companion [interview skill](/skills/interview) runs first, writing a self-contained `SPEC.md` for a fresh session. From there a run goes: read the code and the nearest similar feature, name the pattern to follow; write one plan file readable in a minute, slices in order, tooling before feature, open questions for the human; open the tooling PR, then the feature PR, each with one test per behaviour and a one-paragraph body; delete the plan file and move any convention worth keeping into `CLAUDE.md`. Each step starts from `/clear`. No sub-issues, no findings comments, no follow-ups filed.
 
 ## The one rule that went into CLAUDE.md
 
