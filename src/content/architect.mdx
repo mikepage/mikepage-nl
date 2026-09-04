@@ -9,7 +9,7 @@ The hard part of a large issue isn't the code. It's that the work outlives any o
 
 The answer I ended up with is one line: `/clear` often, and make sure the code can carry what the context can't. Everything below is how I got there.
 
-I tested this deliberately. An epic of onboarding and demo-data work was handed to Claude Fable 5.1 as a long-running, mostly autonomous task. The code shipped. The process didn't.
+I tested this deliberately. An epic of onboarding and demo-data work was handed to Claude Fable 5.1 as a long-running, mostly autonomous task. The code shipped. The process didn't. No model manages its own context for you — that is the part nobody automates, and in autonomous agentic coding it is the hardest problem there is.
 
 ## Two ways of keeping the context, both lost it
 
@@ -31,18 +31,10 @@ The code is the only artifact both of us read the same way. Everything else — 
 
 **Claude keeps producing at the same confidence** where a tired human slows down and says so. That's the docs' trust-then-verify gap, "a plausible-looking implementation that doesn't handle edge cases". So the unit of delegation is one PR you'll actually read — a human reading the diff is the only check a confident summary doesn't pass.
 
-**Claude fills gaps with output where a human fills them with judgment.** So the judgment has to happen while there is still nothing to judge — ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), in plan mode, which is [never triggered for you](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode). What the plan mostly decides is the order: scripts, schema, helpers and fixtures land first with no business meaning, then the feature goes in as one PR of pure logic. Mixing them is what made the epic unreviewable — a helper, a schema and a behaviour in one diff is three unrelated questions at once. *How much* code fills a gap is a separate, per-edit habit, and a skill like [ponytail](https://github.com/dietrichgebert/ponytail) is what trims that.
+**Claude fills gaps with output where a human fills them with judgment.** So the judgment has to happen while there is still nothing to judge — ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), in plan mode, which nothing triggers for you. What the plan mostly decides is the order: scripts, schema, helpers and fixtures land first with no business meaning, then the feature goes in as one PR of pure logic. Mixing them is what made the epic unreviewable — a helper, a schema and a behaviour in one diff is three unrelated questions at once. *How much* code fills a gap is a separate, per-edit habit, and a skill like [ponytail](https://github.com/dietrichgebert/ponytail) is what trims that.
 
 ## The record is the diff
 
 Clearing often is only cheap when nothing valuable is lost with the context, and that is the whole design: keep the plan short, keep the PRs small, and let the code be the record. Everything written about the code should stay smaller than the code.
 
 The [architect skill](/skills/architect) that accompanies this post makes Claude work that way by default, and for anything vague the companion [interview skill](/skills/interview) runs first, writing a self-contained `SPEC.md` for a fresh session. From there a run goes: read the code and the nearest similar feature, name the pattern to follow; write one plan file readable in a minute, slices in order, tooling before feature, open questions for the human; open the tooling PR, then the feature PR, each with one test per behaviour and a one-paragraph body; delete the plan file and move any convention worth keeping into `CLAUDE.md`. Each step starts from `/clear`. No sub-issues, no findings comments, no follow-ups filed.
-
-## The one rule that went into CLAUDE.md
-
-Skills load when they trigger. One rule was worth loading in every session, so it lives in the global `~/.claude/CLAUDE.md`:
-
-> Never create GitHub sub-issues, and never treat sub-issues as tasks for subagents. A sub-issue is tracker bookkeeping, not a unit of work: handing one to a subagent returns a summary that hides whether the task was understood, and the coordinator cannot tell a misread from a correct one. Subagents do research and review a diff in a fresh context; they do not implement. Work is split into PRs, not issues, each implemented in the main session and read by a human before the next one starts. If a step needs a home, it goes in the plan file (see the architect skill). Open a separate issue only when the user explicitly asks for one or a different person will pick it up.
-
-It carries its reason, which the docs say matters more than emphasis. Nothing in it is a product fact; it is a statement about where work is allowed to live.
