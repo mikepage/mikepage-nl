@@ -65,13 +65,13 @@ So the durable memory is the code itself plus one short plan. `/clear` is the de
 
 That is the docs' "trust-then-verify gap": a "plausible-looking implementation that doesn't handle edge cases".
 
-Under bypass permissions Claude doesn't plan at all in my sessions, it starts editing. Productive on a bounded fix, and on an epic exactly where the slop comes from.
-
 So the unit of delegation is one PR you'll actually read, with a check Claude can run. Nothing writes to the tracker from a polluted context. A tired session recording its decisions is how one messy context becomes a pile of messy issues.
 
 ### A human fills gaps in a ticket with judgment. Claude fills them with output.
 
-So the judgment happens first, in a plan. The docs' order is ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), and planning matters most when the approach is uncertain, many files change, or the code is unfamiliar. An epic is all three.
+Two halves, and only one of them is a planning problem. How much code fills the gap is a per-edit habit, and a skill like [ponytail](https://github.com/dietrichgebert/ponytail) is the thing that trims it: a ladder of cheaper answers, checked before anything gets written. Nothing below replaces that, and it doesn't replace any of this.
+
+The half that is a planning problem is *whether the gap should have been filled at all*. So the judgment happens first, in a plan. The docs' order is ["explore first, then plan, then code"](https://code.claude.com/docs/en/best-practices#explore-first-then-plan-then-code), and planning matters most when the approach is uncertain, many files change, or the code is unfamiliar. An epic is all three.
 
 Start in plan mode, implement in auto mode. Plan mode is never triggered for you, and under bypass its edit block [isn't enforced](https://code.claude.com/docs/en/permission-modes#skip-all-checks-with-bypasspermissions-mode).
 
